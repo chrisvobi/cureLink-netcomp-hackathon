@@ -34,6 +34,22 @@ def get_first_available_patient_id(cursor):
             break
     return expected_id
 
+def get_or_create_address(cursor, zip_code, city):
+    """Checks if the zip code exists in the address table. If not, inserts it."""
+    
+    # Check if zip code exists
+    cursor.execute("SELECT  city FROM address WHERE zip_code = %s", (zip_code,))
+    address = cursor.fetchone()
+
+    if address:
+        # If zip code exists but city does not match, return an error
+        if address[0] != city:
+            return None, "Zip code exists but city does not match!"
+        return zip_code, None
+
+    # If zip code does not exist, insert new address
+    cursor.execute("INSERT INTO address (zip_code, city) VALUES (%s, %s)", (zip_code, city))
+    return zip_code, None
 
 def init_register_route(app):
     @app.route('/register', methods=['GET', 'POST'])
@@ -44,17 +60,28 @@ def init_register_route(app):
             password = request.form['password']
             zip_code = request.form['zip_code']
             street = request.form['street']
+            city = request.form['city']
 
-            if not name or not email or not password or not zip_code or not street:
+            if not name or not email or not password or not zip_code or not street or not city:
                 flash("All fields are required!", "danger")
                 return render_template('register.html')
-
             # Hash the password before storing it
             hashed_password = password
 
             db = get_db_connection()
+            if db is None:
+                flash("Database connection failed!", "danger")
+                return render_template('register.html')
             cursor = db.cursor()
 
+            # Check or create address entry
+            zip_code, error = get_or_create_address(cursor, zip_code, city)
+            if error:
+                flash(error, "danger")
+                cursor.close()
+                db.close()
+                return render_template('register.html')
+            
             # Check if the email already exists
             cursor.execute("SELECT * FROM patients WHERE email = %s", (email,))
             existing_user = cursor.fetchone()
