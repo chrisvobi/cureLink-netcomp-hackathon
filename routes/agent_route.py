@@ -106,11 +106,16 @@ def check_urgent_attention(conversation) -> UrgentAttention:
     
     return completion.choices[0].message.parsed
 
-from flask import render_template, request
+from flask import render_template, request, session, redirect, url_for
 
 def init_agent_route(app):
     @app.route('/agent', methods=['GET', 'POST'])
     def agent_page():
+        if 'user_id' not in session:
+            return redirect(url_for('login'))  # Redirect if not logged in
+
+        user_id = session['user_id']  # Get user ID from session
+        
         global conversation # Conversation history
 
         # Retrieve existing conversation from the form submission
