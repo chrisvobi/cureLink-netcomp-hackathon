@@ -2,22 +2,12 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 import json
 
-model = "gpt-4-turbo-preview"  # or "gpt-3.5-turbo-0125" , "gpt-4o" is better, but more expensive
-
 with open('config.json') as config_file:  # Make sure config.json is in the same directory
     config = json.load(config_file)
     key = config['KEY']
-client = OpenAI(api_key=key)
-
 
 client = OpenAI(api_key = key)
 model = 'gpt-4o-mini'
-
-class Doctor(BaseModel):
-    """Determine doctor's specialty"""
-    specialty: str = Field(description="The doctor's specialty")
-    confidence_score: float = Field(description="The confidence score of the prediction, between 0 and 1")
-
 
 # system messages
 system_message = {
@@ -28,7 +18,8 @@ system_message = {
         "Only suggest a specialty when you are highly confident (at least 90% sure). "
         "After gathering enough information, suggest a possible diagnosis and "
         "recommend only one (one word) relevant specialist. Remind the user that this is not a substitute for professional medical advice."
-        "suggest a doctor after maximum 3 questions. "
+        "make sure to gather enough information before making a diagnosis. Ask follow-up questions to get more details"
+        "dont make bold assumptions"
     ),
 }
 
