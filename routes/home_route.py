@@ -12,4 +12,4 @@ def init_home_route(app):
             elif 'headache_info' in request.form:
                 headache_info = request.form['headache_info']
 
-        return render_template('main.html', step=step, symptoms_info=symptoms_info, headache_info=headache_info)
+        return render_template('main.html', symptoms_info=symptoms_info, headache_info=headache_info)
