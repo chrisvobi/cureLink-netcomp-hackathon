@@ -9,15 +9,15 @@ with open('config.json') as config_file:  # Make sure config.json is in the same
     key = config['KEY']
 client = OpenAI(api_key=key)
 
+
+client = OpenAI(api_key = key)
+model = 'gpt-4o-mini'
+
 class Doctor(BaseModel):
     """Determine doctor's specialty"""
     specialty: str = Field(description="The doctor's specialty")
     confidence_score: float = Field(description="The confidence score of the prediction, between 0 and 1")
 
-# Function to be called by the AI
-def suggest_specialty(specialty: str, confidence_score: float) -> str:
-    """Suggest a doctor's specialty based on the confidence score."""
-    return json.dumps({"specialty": specialty, "confidence_score": confidence_score})
 
 # system messages
 system_message = {
@@ -27,79 +27,71 @@ system_message = {
         "ask follow-up questions to get more details before making a diagnosis. "
         "Only suggest a specialty when you are highly confident (at least 90% sure). "
         "After gathering enough information, suggest a possible diagnosis and "
-        "recommend a relevant specialist. Remind the user that this is not a substitute for professional medical advice."
+        "recommend only one (one word) relevant specialist. Remind the user that this is not a substitute for professional medical advice."
+        "suggest a doctor after maximum 3 questions. "
     ),
 }
 
 # init conversation
 conversation = [system_message]
 
+# define the data models
+class DoctorExtraction(BaseModel):
+    diagnosis: str = Field(description="The possible diagnosis based on the user's symptoms")
+    specialty: str = Field(description="The doctor's specialty to recommend")
+    confidence_score: float = Field(description="The confidence score that you are ready to recommend the doctor between 0 and 1")
+
+
+class Questions(BaseModel):
+    question: str = Field(description="The question to ask the user")
+
+
+# functions to interact with the AI model
+def extract_doctor(conversation) -> DoctorExtraction:
+    """
+    Extracts the doctor's specialty to recommend based on the user's message
+    """
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages= conversation,
+        response_format=DoctorExtraction,
+    )
+    result = completion.choices[0].message.parsed
+    return result
+
+def ask_question(conversation) -> Questions:
+    """
+    Asks a follow-up question to the user
+    """
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=conversation,
+        response_format=Questions,
+    )
+    result = completion.choices[0].message.parsed
+    return result
+
+
 user_message = input("Please provide the symptoms: ")
 conversation.append({"role": "user", "content": user_message})
 
-# Loop until confidence is high enough
-while True:
-    try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=conversation,
-            tools=[  # Define the function calling tool
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "suggest_specialty",
-                        "description": "Suggest a doctor's specialty when confidence is high.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "specialty": {
-                                    "type": "string",
-                                    "description": "The doctor's specialty.",
-                                },
-                                "confidence_score": {
-                                    "type": "number",
-                                    "description": "The confidence score of the prediction (0-1).",
-                                },
-                            },
-                            "required": ["specialty", "confidence_score"],
-                        },
-                    },
-                }
-            ],
-            tool_choice="auto",  # Let the model decide whether to call a function
-        )
+specialty = None
+while specialty is None:
+    
+    # first llm to extract doctor
+    doctor_extraction = extract_doctor(conversation)
+    if doctor_extraction.confidence_score > 0.5:
+        conversation.append({"role": "assistant", "content": doctor_extraction})    
+        specialty = doctor_extraction.specialty
+        print(f"Based on your symptoms, you might have {doctor_extraction.diagnosis}. I recommend seeing a {specialty}.")
+        print(doctor_extraction)
+        continue
+    
+    # ask follow-up question if doctor was not extracted
+    question = ask_question(conversation)
+    conversation.append({"role": "assistant", "content": question.question})
+    print(f"Assistant: {question.question}")
+    user_message = input("Your response: ")
+    conversation.append({"role": "user", "content": user_message})
 
-        response_message = response.choices[0].message
-
-        if response_message.tool_calls:
-            # Handle function call
-            tool_call = response_message.tool_calls[0]
-            if tool_call.function.name == "suggest_specialty":
-                arguments = json.loads(tool_call.function.arguments)
-                specialty = arguments["specialty"]
-                confidence_score = arguments["confidence_score"]
-
-                if confidence_score >= 0.9:
-                    print(f"\nAI: Based on the symptoms, I recommend seeing a {specialty}.")
-                    print(f"AI: My confidence score is: {confidence_score:.2f}")
-                    print("AI: Please remember this is not a substitute for professional medical advice.")
-                    break  # Exit the loop
-                else:
-                    # (Optional) Handle cases below threshold, if needed.  Could ask more.
-                    print(f"AI: I need more information to make a confident recommendation (Confidence: {confidence_score:.2f}).")
-                    conversation.append(response_message) #append the message
-                    # The AI hasn't called the function with sufficient confidence
-                    # So, we'll treat this as a regular turn and get its next question
-                    continue
-        else:
-            # Regular AI response (a question)
-            agent_response = response_message.content
-            print(f"\nAI: {agent_response}")
-            conversation.append({"role": "assistant", "content": agent_response})
-
-            user_response = input("You: ")
-            conversation.append({"role": "user", "content": user_response})
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        break
+print("Conversation ended.")
