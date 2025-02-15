@@ -1,28 +1,27 @@
 <!doctype html>
 <html>
 <head>
-    <title>Agent Page</title>
+    <title>Symptom Analysis</title>
 </head>
 <body>
-    <h2>Welcome to the agent</h2>
+    <h2>Symptom Analysis</h2>
 
-    {% if step == 1 %}
-    <form method="POST">
-        <label for="symptoms_info">Describe your symptoms and how long you've had them:</label><br>
-        <input type="text" id="symptoms_info" name="symptoms_info" required><br><br>
+    {% for message in conversation %}
+        <p><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+    {% endfor %}
 
-        <button type="submit">Submit</button>
-    </form>
-
-    {% elif step == 2 %}
-    <form method="POST">
-        <p>Your symptoms: {{ symptoms_info }}</p>
-        <label for="headache_info">Do you have a headache?</label><br>
-        <input type="text" id="headache_info" name="headache_info" required><br><br>
-
-        <button type="submit">Submit</button>
-    </form>
+    {% if specialty %}
+        <p><strong>Assistant:</strong> Based on your symptoms, you might have <strong>{{ diagnosis }}</strong>. I recommend seeing a <strong>{{ specialty }}</strong>.</p>
+    {% elif treatment %}
+        <p><strong>Assistant:</strong> Based on your symptoms, you might not have a severe condition. I recommend <strong>{{ treatment }}</strong>.</p>
     {% endif %}
+
+    <form method="POST">
+        <input type="hidden" name="conversation" value="{{ conversation }}">
+        <label for="user_message">Your response:</label>
+        <input type="text" id="user_message" name="user_message" required>
+        <button type="submit">Submit</button>
+    </form>
 
     <br>
     <a href="{{ url_for('login') }}">Logout</a>
