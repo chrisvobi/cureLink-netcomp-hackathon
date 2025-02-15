@@ -1,8 +1,8 @@
 from flask import render_template, request
 
-def init_home_route(app):
-    @app.route('/main', methods=['GET', 'POST'])
-    def main_page():
+def init_agent_route(app):
+    @app.route('/agent', methods=['GET', 'POST'])
+    def agent_page():
         step = 1  # Track which question to display
         symptoms_info = None
         headache_info = None
@@ -15,4 +15,4 @@ def init_home_route(app):
                 headache_info = request.form['headache_info']
                 step = 3  # Further questions can be added if needed
 
-        return render_template('main.html', step=step, symptoms_info=symptoms_info, headache_info=headache_info)
+        return render_template('agent.html', step=step, symptoms_info=symptoms_info, headache_info=headache_info)
