@@ -7,14 +7,10 @@
     <h2>Symptom Analysis</h2>
 
     {% for message in conversation %}
-        <p><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+        {% if loop.index > 1 %}  {# Skip the first message #}
+            <p><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+        {% endif %}
     {% endfor %}
-
-    {% if specialty %}
-        <p><strong>Assistant:</strong> Based on your symptoms, you might have <strong>{{ diagnosis }}</strong>. I recommend seeing a <strong>{{ specialty }}</strong>.</p>
-    {% elif treatment %}
-        <p><strong>Assistant:</strong> Based on your symptoms, you might not have a severe condition. I recommend <strong>{{ treatment }}</strong>.</p>
-    {% endif %}
 
     <form method="POST">
         <input type="hidden" name="conversation" value="{{ conversation }}">

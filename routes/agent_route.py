@@ -2,14 +2,14 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 import json
 
-with open('config.json') as config_file:  # Make sure config.json is in the same directory
+with open('config.json') as config_file:
     config = json.load(config_file)
     key = config['KEY']
 
-client = OpenAI(api_key = key)
+client = OpenAI(api_key=key)
 model = 'gpt-4o-mini'
 
-# system messages
+# System message
 system_message = {
     "role": "system",
     "content": (
@@ -18,62 +18,92 @@ system_message = {
         "Only recommend a specialist when you are at least 90% confident. "
         "If unsure, keep asking questions to gather more information. "
         "Never make bold assumptions or provide a diagnosis too early."
-        "If you are at least 90% confident that the symptoms are not severe,and you have ruled out that the patient needs a doctor, reccomend simple at home treatment."
+        "If you are at least 90% confident that the symptoms are not severe, and you have ruled out that the patient needs a doctor, recommend simple at-home treatment."
     ),
 }
 
-# init conversation
 conversation = [system_message]
 
-# define the data models
 class DoctorExtraction(BaseModel):
     diagnosis: str = Field(description="Possible diagnosis based on the user's symptoms")
     specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist')")
     confidence_score: float = Field(description="Confidence score (0-1) for recommending a doctor")
 
+class UrgentAttention(BaseModel):
+    is_urgent: bool = Field(description="True if the symptoms require immediate emergency attention, False otherwise")
+    reason: str = Field(description="Brief reason why emergency attention is necessary")
+
+
 class SymptomsNotSevere(BaseModel):
     at_home_treatment: str = Field(description="Recommendation for at-home treatment, based on symptoms")
     confidence_score: float = Field(description="Confidence score (0-1) for recommending at-home treatment")
-    
 
 class Questions(BaseModel):
     question: str = Field(description="The question to ask the user")
 
-
-# functions to interact with the AI model
-def extract_doctor(conversation) -> DoctorExtraction:
+class InputValidation(BaseModel):
+    is_relevant: bool = Field(description="Indicates whether the user's input is medically relevant")
+    
+relevance_check ={
+    "role": "system",
+    "content": ("You are a medical assisant that classifies whether a given input is medically relevant."
+    "User input must contain health related or medical terms.")
+}
+# Function to check if user input is relevant
+def validate_input(user_message,conversation) -> bool:
     """
-    Extracts the doctor's specialty to recommend based on the user's message
+    Determines whether the user's message is medically relevant.
+    Returns True if relevant, False otherwise.
     """
+    validation_prompt = [
+        relevance_check,
+        {"role": "user", "content": f"User input: {user_message}\nIs this medically relevant? Respond with 'true' or 'false' only."}
+    ]
+    
     completion = client.beta.chat.completions.parse(
         model=model,
-        messages= conversation,
+        messages=validation_prompt + conversation,
+        response_format=InputValidation,
+    )
+    
+    return completion.choices[0].message.parsed.is_relevant
+
+def extract_doctor(conversation) -> DoctorExtraction:
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=conversation,
         response_format=DoctorExtraction,
     )
-    result = completion.choices[0].message.parsed
-    return result
+    return completion.choices[0].message.parsed
 
 def ask_question(conversation) -> Questions:
-    """
-    Asks a follow-up question to the user
-    """
     completion = client.beta.chat.completions.parse(
         model=model,
         messages=conversation,
         response_format=Questions,
     )
-    result = completion.choices[0].message.parsed
-    return result
+    return completion.choices[0].message.parsed
 
 def extract_symptoms_not_severe(conversation) -> SymptomsNotSevere:
-    """Extract the recommendation for at-home treatment"""
     completion = client.beta.chat.completions.parse(
         model=model,
         messages=conversation,
         response_format=SymptomsNotSevere,
     )
-    result = completion.choices[0].message.parsed
-    return result
+    return completion.choices[0].message.parsed
+
+def check_urgent_attention(conversation) -> UrgentAttention:
+    """
+    Determines whether the user's symptoms require immediate emergency attention.
+    If so, the assistant should direct the user to go to the ER immediately.
+    """
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=conversation,
+        response_format=UrgentAttention,
+    )
+    
+    return completion.choices[0].message.parsed
 
 from flask import render_template, request
 
@@ -86,24 +116,34 @@ def init_agent_route(app):
         if request.method == 'POST':
             conversation = eval(request.form['conversation'])  # Convert string back to list
             user_message = request.form['user_message']
+
+             # Validate user input
+            if not validate_input(user_message,conversation):
+                answer = "Assistant: Your response does not seem to be related to medical symptoms. Please provide relevant information."
+                conversation.append({"role": "assistant", "content": answer})
+                return render_template('agent.html', conversation=conversation)
+            
             conversation.append({"role": "user", "content": user_message})
-
+            
+            urgent_check = check_urgent_attention(conversation)
+            if urgent_check.is_urgent:
+                answer = f"EMERGENCY: {urgent_check.reason}. Please go to the ER immediately!"
+                conversation.append({"role": "assistant", "content": answer})
+                return render_template('agent.html', conversation=conversation)
+                # Stop the loop as emergency action is needed
+        
             doctor_extraction = extract_doctor(conversation)
-
-            if doctor_extraction.confidence_score > 0.9:
+            if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
                 conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
-
-
-            elif len(conversation) > 12:
+                return render_template('agent.html', conversation=conversation)
+            
+            if len(conversation) > 12:
                 not_severe_symptoms = extract_symptoms_not_severe(conversation)
                 if not_severe_symptoms.confidence_score > 0.9:
                     treatment = not_severe_symptoms.at_home_treatment
                     conversation.append({"role": "assistant", "content": f"Based on your symptoms, you might not have a severe condition. I recommend {treatment}."})
                     return render_template('agent.html', conversation=conversation)
-
-            else:
-                question = ask_question(conversation)
-                conversation.append({"role": "assistant", "content": question.question})
-                return render_template('agent.html', conversation=conversation)
-
-        return render_template('agent.html', conversation=conversation[1:])
+            
+            question = ask_question(conversation)
+            conversation.append({"role": "assistant", "content": question.question})
+        return render_template('agent.html', conversation=conversation)
