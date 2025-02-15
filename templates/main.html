@@ -5,10 +5,17 @@
 </head>
 <body>
     <h2>You have successfully logged in!</h2>
-    <p>Click the button below to proceed to the agent page.</p>
+    <p>Click the button below to proceed to the main page.</p>
 
     <form action="{{ url_for('agent_page') }}" method="get">
         <button type="submit">Go to Agent Page</button>
+    </form>
+
+    <br>
+
+    <p>Or, view your appointments:</p>
+    <form action="{{ url_for('appointments_page') }}" method="get">
+        <button type="submit">View Appointments</button>
     </form>
 </body>
 </html>
