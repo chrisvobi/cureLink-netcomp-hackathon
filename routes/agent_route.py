@@ -31,6 +31,7 @@ class DoctorExtraction(BaseModel):
 
 class UrgentAttention(BaseModel):
     is_urgent: bool = Field(description="True if the symptoms require immediate emergency attention, False otherwise")
+    confidence_score: float = Field(description="Confidence score (0-1) for classifying symtoms as urgent")
     reason: str = Field(description="Brief reason why emergency attention is necessary")
 
 
@@ -126,7 +127,7 @@ def init_agent_route(app):
             conversation.append({"role": "user", "content": user_message})
             
             urgent_check = check_urgent_attention(conversation)
-            if urgent_check.is_urgent:
+            if urgent_check.is_urgent and urgent_check.confidence_score > 0.95:
                 answer = f"EMERGENCY: {urgent_check.reason}. Please go to the ER immediately!"
                 conversation.append({"role": "assistant", "content": answer})
                 return render_template('agent.html', conversation=conversation)
