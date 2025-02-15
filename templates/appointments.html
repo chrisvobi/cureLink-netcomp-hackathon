@@ -1,11 +1,32 @@
 <!doctype html>
 <html>
 <head>
-    <title>Appointments</title>
+    <title>Available Appointments</title>
 </head>
 <body>
-    <h2>Your Appointments</h2>
-    <p>List of scheduled appointments will appear here.</p>
+    <h2>Available Appointments</h2>
+    <p><strong>{{ conversation.role }}:</strong> {{ conversation.content }}</p>
+
+    <br>
+
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Specialty</th>
+            <th>Address</th>
+            <th>Distance (km)</th>
+            <th>Available Appointments</th>
+        </tr>
+        {% for doctor in doctors %}
+            <tr>
+                <td>{{ doctor.name }}</td>
+                <td>{{ doctor.specialty }}</td>
+                <td>{{ doctor.street }}, {{ doctor.city }}</td>
+                <td>{{ "%.2f"|format(doctor.distance_km) }}</td>
+                <td>{{ doctor.available_slots if doctor.available_slots else "No available slots" }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 
     <br>
     <a href="{{ url_for('main_page') }}">Back to Main</a>

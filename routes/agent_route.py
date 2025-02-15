@@ -113,8 +113,6 @@ def init_agent_route(app):
     def agent_page():
         if 'user_id' not in session:
             return redirect(url_for('login'))  # Redirect if not logged in
-
-        user_id = session['user_id']  # Get user ID from session
         
         global conversation # Conversation history
 
@@ -141,7 +139,9 @@ def init_agent_route(app):
             doctor_extraction = extract_doctor(conversation)
             if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
                 conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
-                return render_template('agent.html', conversation=conversation)
+                session['specialty'] = doctor_extraction.specialty
+                session['conversation'] = conversation
+                return render_template('agent.html', conversation=conversation, button=True)
             
             if len(conversation) > 12:
                 not_severe_symptoms = extract_symptoms_not_severe(conversation)

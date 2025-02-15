@@ -18,6 +18,16 @@
         <input type="text" id="user_message" name="user_message" required>
         <button type="submit">Submit</button>
     </form>
+    
+    {%if button %}
+        <br>
+        <p>See all available appointments in your area</p>
+        <form action="{{ url_for('appointments_page') }}" method="get">
+            <button type="submit">Book now</button>
+        </form>
+    {% endif %}
+    
+    
 
     <br>
     <a href="{{ url_for('login') }}">Logout</a>
