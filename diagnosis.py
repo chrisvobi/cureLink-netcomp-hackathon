@@ -13,13 +13,11 @@ model = 'gpt-4o-mini'
 system_message = {
     "role": "system",
     "content": (
-        "You are a medical AI assistant. When a user describes their symptoms, "
-        "ask follow-up questions to get more details before making a diagnosis. "
-        "Only suggest a specialty when you are highly confident (at least 90% sure). "
-        "After gathering enough information, suggest a possible diagnosis and "
-        "recommend only one (one word) relevant specialist. Remind the user that this is not a substitute for professional medical advice."
-        "make sure to gather enough information before making a diagnosis. Ask follow-up questions to get more details"
-        "dont make bold assumptions"
+        "You are a medical AI assistant. Your goal is to ask relevant follow-up questions "
+        "before making a diagnosis or recommending a specialist. "
+        "Only recommend a specialist when you are at least 90% confident. "
+        "If unsure, keep asking questions to gather more information. "
+        "Never make bold assumptions or provide a diagnosis too early."
     ),
 }
 
@@ -28,9 +26,9 @@ conversation = [system_message]
 
 # define the data models
 class DoctorExtraction(BaseModel):
-    diagnosis: str = Field(description="The possible diagnosis based on the user's symptoms")
-    specialty: str = Field(description="The doctor's specialty to recommend")
-    confidence_score: float = Field(description="The confidence score that you are ready to recommend the doctor between 0 and 1")
+    diagnosis: str = Field(description="Possible diagnosis based on the user's symptoms")
+    specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist')")
+    confidence_score: float = Field(description="Confidence score (0-1) for recommending a doctor")
 
 
 class Questions(BaseModel):
@@ -71,7 +69,7 @@ while specialty is None:
     
     # first llm to extract doctor
     doctor_extraction = extract_doctor(conversation)
-    if doctor_extraction.confidence_score > 0.5:
+    if doctor_extraction.confidence_score > 0.9:
         conversation.append({"role": "assistant", "content": doctor_extraction})    
         specialty = doctor_extraction.specialty
         print(f"Based on your symptoms, you might have {doctor_extraction.diagnosis}. I recommend seeing a {specialty}.")
