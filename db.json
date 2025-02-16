@@ -1,0 +1,17 @@
+{
+    "host": "localhost",
+    "database": "med_db",
+    "login_user": {
+        "user": "login_user",
+        "password": "login_user_password"
+    },
+    "register_user": {
+        "user": "register_user",
+        "password": "register_user_password"
+       
+    },
+    "app_user": {
+        "user": "patient",
+        "password": "patient_password"
+    }
+}

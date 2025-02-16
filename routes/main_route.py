@@ -1,21 +1,6 @@
 from flask import render_template, request, session, redirect, url_for
-import mysql.connector
-import json
+from utils.db_connection import get_db_connection 
 
-
-
-def get_db_connection(user_type="app_user"):
-    # Load DB configuration
-    with open('config.json', 'r') as config_file:
-        config = json.load(config_file)
-    """Returns a database connection based on the user type."""
-    db_user = config[user_type]
-    return mysql.connector.connect(
-        host=config["host"],
-        user=db_user["user"],
-        password=db_user["password"],
-        database=config["database"]
-    )
 
 def init_main_route(app):
     @app.route('/main', methods=['GET', 'POST'])

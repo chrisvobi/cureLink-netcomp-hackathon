@@ -1,22 +1,7 @@
 from flask import render_template, redirect, url_for, request, session, flash
-import mysql.connector
 from werkzeug.security import check_password_hash
-import json
+from utils.db_connection import get_db_connection 
 
-def get_db_connection():
-    # Load database configuration from JSON file
-    with open('config.json', 'r') as config_file:
-        config = json.load(config_file)
-    db_user = config["login_user"]
-    # Connect to MySQL
-    db = mysql.connector.connect(
-        host=config["host"],
-        user=db_user["user"],
-        password=db_user["password"],
-        database=config["database"]
-    )
-
-    return db
     
 def init_login_route(app):
     @app.route('/', methods=['GET', 'POST'])
@@ -25,7 +10,7 @@ def init_login_route(app):
             email = request.form['email']
             password = request.form['password']
 
-            db = get_db_connection()
+            db = get_db_connection("login_user")
             cursor = db.cursor(dictionary=True)
             cursor.execute("SELECT * FROM patients WHERE email = %s", (email,))
             user = cursor.fetchone()
@@ -39,6 +24,7 @@ def init_login_route(app):
             else:
                 flash("Invalid email or password", "danger")
 
+            db.close()
         return render_template('login.html')
 
     @app.route('/logout')

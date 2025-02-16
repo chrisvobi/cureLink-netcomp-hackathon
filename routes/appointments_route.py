@@ -1,28 +1,13 @@
 from flask import render_template, session
-import mysql.connector
 import math
 import requests
 import json
+from utils.db_connection import get_db_connection 
+
 
 with open('config.json') as config_file:
     config = json.load(config_file)
     GOOGLE_API_KEY = config['GOOGLE_API_KEY']
-    db_config = {
-    'host': config['DB_HOST'],
-    'user': config['DB_USER'],
-    'password': config['DB_PASSWORD'],
-    'database': config['DB_NAME']
-    }
-
-## Database communication etc functions to get available appointments in your area
-def get_db_connection():
-    """Δημιουργεί και επιστρέφει μια σύνδεση στη βάση δεδομένων."""
-    try:
-        conn = mysql.connector.connect(**db_config)
-        return conn
-    except mysql.connector.Error as err:
-        print(f"Could not connect to the database: {err}")
-        return None
 
 def get_coordinates(address):
     """Χρησιμοποιεί το Google Geocoding API για να μετατρέψει μια διεύθυνση σε γεωγραφικές συντεταγμένες."""
@@ -50,11 +35,11 @@ def haversine(lat1, lon1, lat2, lon2):
 
 def find_doctors_by_criteria(specialty, patient_id):
     """Ανακτά και εμφανίζει γιατρούς με βάση την πόλη και την ειδικότητα, ταξινομημένους κατά απόσταση από τον ασθενή."""
-    conn = get_db_connection()
-    if conn is None:
+    db = get_db_connection("app_user")
+    if db is None:
         return
 
-    cursor = conn.cursor(dictionary=True)
+    cursor = db.cursor(dictionary=True)
     cursor.execute("""
         SELECT p.street, p.zip_code, a.city 
         FROM patients p
@@ -70,7 +55,7 @@ def find_doctors_by_criteria(specialty, patient_id):
     if patient_lat is None or patient_lon is None:
         print("Δεν ήταν δυνατός ο εντοπισμός της διεύθυνσης του ασθενούς.")
         cursor.close()
-        conn.close()
+        db.close()
         return
 
     query = """
@@ -99,7 +84,7 @@ def find_doctors_by_criteria(specialty, patient_id):
     doctor_distances.sort(key=lambda x: x["distance_km"])
     
     cursor.close()
-    conn.close()
+    db.close()
 
     return doctor_distances
 

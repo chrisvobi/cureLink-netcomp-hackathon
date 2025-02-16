@@ -1,24 +1,7 @@
 from flask import render_template, redirect, url_for, request, flash
-import mysql.connector
 from werkzeug.security import generate_password_hash
-import json
+from utils.db_connection import get_db_connection 
 
-def get_db_connection():
-    # Load database configuration
-    with open('config.json', 'r') as config_file:
-        config = json.load(config_file)
-
-    db_user = config["register_user"]
-
-    # Connect to MySQL
-    db = mysql.connector.connect(
-        host=config["host"],
-        user=db_user["user"],
-        password=db_user["password"],
-        database=config["database"]
-    )
-
-    return db
 
 def get_first_available_patient_id(cursor):
     """Finds the first available patient_id in the patients table."""
@@ -68,10 +51,7 @@ def init_register_route(app):
             # Hash the password before storing it
             hashed_password = generate_password_hash(password, method='pbkdf2:sha512')
 
-            db = get_db_connection()
-            if db is None:
-                flash("Database connection failed!", "danger")
-                return render_template('register.html')
+            db = get_db_connection("register_user")
             cursor = db.cursor()
 
             # Check or create address entry
