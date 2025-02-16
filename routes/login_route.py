@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, request, session, flash
 import mysql.connector
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 import json
 
 def get_db_connection():
@@ -18,7 +18,6 @@ def get_db_connection():
 
     return db
     
-
 def init_login_route(app):
     @app.route('/', methods=['GET', 'POST'])
     def login():
@@ -32,7 +31,7 @@ def init_login_route(app):
             user = cursor.fetchone()
             cursor.close()
 
-            if user and user['password'] == password: #HAHASHAHAHHAHAHHAHAHAHHAHAHASHSHAHASHASHSAHhsA
+            if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['patient_id']
                 session['email'] = user['email']
                 flash("Login successful!", "success")

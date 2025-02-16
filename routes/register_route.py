@@ -66,7 +66,7 @@ def init_register_route(app):
                 flash("All fields are required!", "danger")
                 return render_template('register.html')
             # Hash the password before storing it
-            hashed_password = password
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha512')
 
             db = get_db_connection()
             if db is None:
