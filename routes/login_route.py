@@ -19,6 +19,8 @@ def init_login_route(app):
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['patient_id']
                 session['email'] = user['email']
+                session['zip_code'] = user['zip_code']
+                session['street'] = user['street']
                 flash("Login successful!", "success")
                 return redirect(url_for('main_page'))
             else:

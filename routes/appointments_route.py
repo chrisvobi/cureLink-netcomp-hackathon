@@ -34,30 +34,26 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c  # Απόσταση σε χιλιόμετρα
 
 def find_doctors_by_criteria(specialty, patient_id):
+    # Get patient data from session and calculate coordinates
+    
     """Ανακτά και εμφανίζει γιατρούς με βάση την πόλη και την ειδικότητα, ταξινομημένους κατά απόσταση από τον ασθενή."""
-    db = get_db_connection("app_user")
+    db = get_db_connection("appointment_user")
     if db is None:
         return
 
     cursor = db.cursor(dictionary=True)
+
+
     cursor.execute("""
-        SELECT p.street, p.zip_code, a.city 
-        FROM patients p
-        LEFT JOIN address a ON p.zip_code = a.zip_code
-        WHERE p.patient_id = %s
-    """, (patient_id,))
+        SELECT city 
+        FROM address 
+        WHERE address.zip_code = %s
+    """, (session['zip_code'],))
     patient_data = cursor.fetchone()
 
-    patient_address = f"{patient_data['street']} {patient_data['city']}"
-    patient_city = patient_data['city']
+    patient_address = f"{session['street']} { patient_data['city']}"
+    patient_city =  patient_data['city']
     patient_lat, patient_lon = get_coordinates(patient_address)
-
-    if patient_lat is None or patient_lon is None:
-        print("Δεν ήταν δυνατός ο εντοπισμός της διεύθυνσης του ασθενούς.")
-        cursor.close()
-        db.close()
-        return
-
     query = """
     SELECT d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city,
            GROUP_CONCAT(aslot.date_time ORDER BY aslot.date_time SEPARATOR ', ') AS available_slots

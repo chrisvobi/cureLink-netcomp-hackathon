@@ -10,8 +10,8 @@
         "password": "register_user_password"
        
     },
-    "app_user": {
-        "user": "patient",
-        "password": "patient_password"
+    "appointment_user": {
+        "user": "appointment",
+        "password": "appointment_password"
     }
 }
