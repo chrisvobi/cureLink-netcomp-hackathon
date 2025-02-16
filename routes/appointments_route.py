@@ -45,13 +45,13 @@ def find_doctors_by_criteria(specialty):
 
 
     cursor.execute("""
-        SELECT city 
+        SELECT city , zip_code
         FROM address 
         WHERE address.zip_code = %s
     """, (session['zip_code'],))
     patient_data = cursor.fetchone()
 
-    patient_address = f"{session['street']} { patient_data['city']}"
+    patient_address = f"{session['street']} { patient_data['city']} {patient_data['zip_code']}"
     patient_city =  patient_data['city']
     patient_lat, patient_lon = get_coordinates(patient_address)
     query = """
@@ -69,7 +69,7 @@ def find_doctors_by_criteria(specialty):
     doctor_distances = []
 
     for doctor in doctors:
-        doctor_address = f"{doctor['street']} {doctor['city']}"
+        doctor_address = f"{doctor['street']} {doctor['city']} {doctor['zip_code']}"
         doctor_lat, doctor_lon = get_coordinates(doctor_address)
 
         if doctor_lat is not None and doctor_lon is not None:
