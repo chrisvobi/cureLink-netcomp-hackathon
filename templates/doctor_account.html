@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+    <title>Doctor Account Details</title>
+    <script>
+        function toggleEdit() {
+            let inputs = document.querySelectorAll(".editable");
+            let isEditing = document.getElementById("editBtn").innerText === "Edit";
+
+            inputs.forEach(input => {
+                input.readOnly = !isEditing;
+                input.style.border = isEditing ? "1px solid black" : "none";
+                input.style.background = isEditing ? "#f8f8f8" : "transparent";
+            });
+
+            document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
+            document.getElementById("cancelBtn").style.display = isEditing ? "inline-block" : "none";
+
+            if (!isEditing) {
+                saveChanges();
+            }
+        }
+
+        function cancelEdit() {
+            location.reload(); // Reload the page to discard changes
+        }
+
+        function saveChanges() {
+            let formData = new FormData(document.getElementById("editForm"));
+
+            fetch('/update_doctor_account', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Details updated successfully!");
+                    location.reload();
+                } else {
+                    alert("Error updating details.");
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h2>Doctor Details</h2>
+
+    {% if doctor %}
+    <form id="editForm">
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <td><input type="text" class="editable" name="name" value="{{ doctor[0] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td><input type="text" value="{{ doctor[1] }}" readonly style="border: none; background: transparent;"></td>
+            </tr>
+            <tr>
+                <th>Specialty</th>
+                <td><input type="text" class="editable" name="specialty" value="{{ doctor[2] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Zip Code</th>
+                <td><input type="text" class="editable" name="zip_code" value="{{ doctor[3] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Street</th>
+                <td><input type="text" class="editable" name="street" value="{{ doctor[4] }}" readonly></td>
+            </tr>
+        </table>
+        <br>
+        <button type="button" id="editBtn" onclick="toggleEdit()">Edit</button>
+        <button type="button" id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancel</button>
+    </form>
+    {% else %}
+    <p>No details available.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('doctor_page') }}">Back to Doctor Main Page</a>
+</body>
+</html>
