@@ -2,20 +2,25 @@
 <html>
 <head>
     <title>Redirect Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-    <h2>You have successfully logged in!</h2>
-    <p>Click the button below to proceed to the main page.</p>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CureLink Logo" class="logo">
+        <div class="success-message">
+            You have successfully logged in!
+        </div>
+        <p class="info-text">For any health problem the agent is here for you!</p>
+        
+        <p class="option-text">To Analyze your Symptoms:</p>
+        <form action="{{ url_for('agent_page') }}" method="get">
+            <button type="submit" class="action-button">click here!</button>
+        </form>
 
-    <form action="{{ url_for('agent_page') }}" method="get">
-        <button type="submit">Go to Agent Page</button>
-    </form>
-
-    <br>
-
-    <p>Or, view your appointments:</p>
-    <form action="{{ url_for('appointments_history_page') }}" method="get">
-        <button type="submit">View Appointments</button>
-    </form>
+        <p class="option-text">To see your appointments:</p>
+        <form action="{{ url_for('appointments_history_page') }}" method="get">
+            <button type="submit" class="action-button">click here!</button>
+        </form>
+    </div>
 </body>
 </html>
