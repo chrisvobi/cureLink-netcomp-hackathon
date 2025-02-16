@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <title>Account Details</title>
+</head>
+<body>
+    <h2>Your Details</h2>
+
+    {% if patient %}
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <td>{{ patient[0] }}</td>
+        </tr>
+        <tr>
+            <th>Street</th>
+            <td>{{ patient[1] }}</td>
+        </tr>
+        <tr>
+            <th>Age</th>
+            <td>{{ patient[2] }}</td>
+        </tr>
+        <tr>
+            <th>Gender</th>
+            <td>{{ patient[3] }}</td>
+        </tr>
+        <tr>
+            <th>Medical Record</th>
+            <td>{{ patient[4] }}</td>
+        </tr>
+        <tr>
+            <th>Family History</th>
+            <td>{{ patient[5] }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <p>No details available.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('main_page') }}">Back to Main Page</a>
+</body>
+</html>

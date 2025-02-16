@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Redirect Page</title>
+    <title>Main Page</title>
 </head>
 <body>
     <h2>You have successfully logged in!</h2>
@@ -17,5 +17,20 @@
     <form action="{{ url_for('appointments_history_page') }}" method="get">
         <button type="submit">View Appointments</button>
     </form>
+
+    <br>
+
+    <!-- View Account Button -->
+    <form action="{{ url_for('account_page') }}" method="get">
+        <button type="submit">View Account</button>
+    </form>
+
+    <br>
+
+    <!-- Logout Button -->
+    <form action="{{ url_for('logout') }}" method="get">
+        <button type="submit" style="background-color: red; color: white;">Logout</button>
+    </form>
+
 </body>
 </html>
