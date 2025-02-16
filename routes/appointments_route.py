@@ -84,6 +84,44 @@ def find_doctors_by_criteria(specialty):
 
     return doctor_distances
 
+def choose_appointment (doctors, name, date_time):
+    for doctor in doctors:
+        if not doctor['available_slots']: return None
+        if name in doctor['name'] and date_time in doctor['available_slots']:
+            return {"doctor_id": doctor['doctor_id'], "date_time": date_time}
+        else: return None
+
+def book_appointment(patient_id, appointment):
+    db = get_db_connection("appointment_user")
+    if db is None:
+        return
+    cursor = db.cursor(dictionary=True)
+
+    query = """
+    SELECT slot_id from available_slots
+    where doctor_id = %s and date_time = %s
+"""
+    cursor.execute(query, (appointment['doctor_id'], appointment['date_time']))
+    slot_id = cursor.fetchone()
+
+    query = """
+    INSERT INTO appointments (patient_id, doctor_id, slot_id, status)
+    VALUES (%s, %s, %s, %s)
+"""
+    cursor.execute(query, (patient_id, appointment['doctor_id'], slot_id['slot_id'], "scheduled"))
+
+    query = """
+    UPDATE available_slots
+    SET booked = 1
+    WHERE slot_id = %s
+"""
+    cursor.execute(query, (slot_id['slot_id'],))
+
+    db.commit()
+
+
+    cursor.close()
+    db.close()
     
 
 def init_appointments_route(app):
