@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+    <title>DocAgent</title>
+</head>
+<body>
+    <h2>Your personal agent</h2>
+
+    <p><strong>assistant:</strong>What can I help you with?</p>
+    
+    {% for message in conversation %}
+        {% if loop.index > 1 %}  {# Skip the first message #}
+            <p><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+        {% endif %}
+    {% endfor %}
+
+    <form method="POST">
+        <input type="hidden" name="conversation" value="{{ conversation }}">
+        <label for="user_message">Your response:</label>
+        <input type="text" id="user_message" name="user_message" required>
+        <button type="submit">Submit</button>
+    </form>
+    
+    <br>
+    <a href="{{ url_for('login') }}">Logout</a>
+</body>
+</html>
