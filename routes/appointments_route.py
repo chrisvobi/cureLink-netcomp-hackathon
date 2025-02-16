@@ -1,4 +1,4 @@
-from flask import render_template, session
+from flask import render_template, session, redirect, url_for
 import math
 import requests
 import json
@@ -89,6 +89,9 @@ def find_doctors_by_criteria(specialty):
 def init_appointments_route(app):
     @app.route('/appointments')
     def appointments_page():
+        if 'user_id' not in session:
+            return redirect(url_for('login'))  # Redirect if not logged in
+        
         specialty = session['specialty']
         conversation = session['conversation']
         doctors = find_doctors_by_criteria(specialty)

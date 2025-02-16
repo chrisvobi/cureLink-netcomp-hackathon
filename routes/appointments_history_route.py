@@ -1,9 +1,12 @@
-from flask import render_template, session
+from flask import render_template, session, redirect, url_for
 from utils.db_connection import get_db_connection
 
 def init_appointments_history_route(app):
     @app.route('/appointments_history')
     def appointments_history_page():
+        if 'user_id' not in session:
+            return redirect(url_for('login'))  # Redirect if not logged in
+        
         patient_id = session['user_id']
         query = """
             SELECT doctors.name, doctors.specialty, available_slots.date_time, appointments.status, appointments.diagnosis, appointments.medicine
