@@ -33,7 +33,7 @@ def haversine(lat1, lon1, lat2, lon2):
 
     return R * c  # Απόσταση σε χιλιόμετρα
 
-def find_doctors_by_criteria(specialty, patient_id):
+def find_doctors_by_criteria(specialty):
     # Get patient data from session and calculate coordinates
     
     """Ανακτά και εμφανίζει γιατρούς με βάση την πόλη και την ειδικότητα, ταξινομημένους κατά απόσταση από τον ασθενή."""
@@ -89,10 +89,9 @@ def find_doctors_by_criteria(specialty, patient_id):
 def init_appointments_route(app):
     @app.route('/appointments')
     def appointments_page():
-        patient_id = session['user_id']
         specialty = session['specialty']
         conversation = session['conversation']
-        doctors = find_doctors_by_criteria(specialty, patient_id)
+        doctors = find_doctors_by_criteria(specialty)
         if doctors:
                 conversation.append({
                     "role": "assistant",
