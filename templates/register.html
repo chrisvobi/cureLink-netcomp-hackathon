@@ -31,6 +31,37 @@
         <label>City:</label>
         <input type="text" name="city" required><br><br>
 
+        <label>Register as:</label>
+        <select name="user_type" id="user_type" required onchange="toggleSpecialtyField()">
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+        </select>
+        <br><br>
+
+        <!-- Specialty field (hidden by default) -->
+        <div id="specialty_field" style="display: none;">
+            <label>Specialty:</label>
+            <input type="text" name="specialty" id="specialty">
+            <br><br>
+        </div>
+
+        <script>
+        function toggleSpecialtyField() {
+            var userType = document.getElementById("user_type").value;
+            var specialtyField = document.getElementById("specialty_field");
+
+            if (userType === "doctor") {
+                specialtyField.style.display = "block";
+                document.getElementById("specialty").setAttribute("required", "true");
+            } else {
+                specialtyField.style.display = "none";
+                document.getElementById("specialty").removeAttribute("required");
+            }
+        }
+        </script>
+
+        <br><br>
+
         <button type="submit">Register</button>
     </form>
 
