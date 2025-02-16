@@ -1,7 +1,8 @@
 from flask import render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash
 from utils.db_connection import get_db_connection 
-
+from utils.valid_email import is_valid_email
+from utils.valid_zipcode import is_valid_zip
 
 def get_first_available_patient_id(cursor):
     """Finds the first available patient_id in the patients table."""
@@ -45,6 +46,14 @@ def init_register_route(app):
             street = request.form['street']
             city = request.form['city']
 
+            if not is_valid_email(email):
+                flash("Invalid email format!", "danger")
+                return render_template('register.html')
+
+            if not is_valid_zip(zip_code):
+                flash("Invalid zip code!", "danger")
+                return render_template('register.html')
+            
             if not name or not email or not password or not zip_code or not street or not city:
                 flash("All fields are required!", "danger")
                 return render_template('register.html')
