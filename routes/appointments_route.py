@@ -92,6 +92,9 @@ def init_appointments_route(app):
         if 'user_id' not in session:
             return redirect(url_for('login'))  # Redirect if not logged in
         
+        if session.get('user_type') != "patient":  
+            return redirect(url_for('login'))  # Redirect doctors away
+        
         specialty = session['specialty']
         conversation = session['conversation']
         doctors = find_doctors_by_criteria(specialty)

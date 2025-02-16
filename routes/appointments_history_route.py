@@ -7,6 +7,9 @@ def init_appointments_history_route(app):
         if 'user_id' not in session:
             return redirect(url_for('login'))  # Redirect if not logged in
         
+        if session.get('user_type') != "patient":  
+            return redirect(url_for('login'))  # Redirect doctors away
+        
         patient_id = session['user_id']
         query = """
             SELECT doctors.name, doctors.specialty, available_slots.date_time, appointments.status, appointments.diagnosis, appointments.medicine

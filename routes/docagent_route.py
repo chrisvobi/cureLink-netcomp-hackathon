@@ -143,6 +143,9 @@ def init_docagent_route(app):
         if 'user_id' not in session:
             return redirect(url_for('login'))  # Redirect if not logged in
         
+        if session.get('user_type') != "doctor":  
+            return redirect(url_for('login'))  # Redirect patients away
+        
         global conversation # Conversation history
 
         if request.method == 'POST':

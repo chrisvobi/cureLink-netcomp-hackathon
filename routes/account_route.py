@@ -7,6 +7,9 @@ def init_account_route(app):
         if 'user_id' not in session:
             return redirect(url_for('login'))
 
+        if session.get('user_type') != "patient":  
+            return redirect(url_for('login'))  # Redirect doctors away
+        
         patient_id = session['user_id']
         query = """
             SELECT name, street, zip_code, age, gender, medical_record, family_history
