@@ -1,0 +1,55 @@
+body {
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+}
+
+.container {
+    padding: 50px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    width: 50%;
+    margin: 100px auto;
+}
+
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.success-message {
+    background-color: #8BC34A;
+    color: #2E7D32;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.info-text {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.option-text {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.action-button {
+    background-color: white;
+    color: black;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.action-button:hover {
+    background-color: #f0f0f0;
+}
