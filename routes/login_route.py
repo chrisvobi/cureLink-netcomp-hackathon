@@ -7,6 +7,8 @@ from utils.valid_email import is_valid_email
 def init_login_route(app):
     @app.route('/', methods=['GET', 'POST'])
     def login():
+        session.clear()
+        
         if request.method == 'POST':
             email = request.form['email']
             password = request.form['password']
