@@ -2,37 +2,87 @@
 <html>
 <head>
     <title>Account Details</title>
+    <script>
+        function toggleEdit() {
+            let inputs = document.querySelectorAll(".editable");
+            let isEditing = document.getElementById("editBtn").innerText === "Edit";
+
+            inputs.forEach(input => {
+                input.readOnly = !isEditing;
+                input.style.border = isEditing ? "1px solid black" : "none";
+                input.style.background = isEditing ? "#f8f8f8" : "transparent";
+            });
+
+            document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
+            document.getElementById("cancelBtn").style.display = isEditing ? "inline-block" : "none";
+
+            if (!isEditing) {
+                saveChanges();
+            }
+        }
+
+        function cancelEdit() {
+            location.reload(); // Reload the page to discard changes
+        }
+
+        function saveChanges() {
+            let formData = new FormData(document.getElementById("editForm"));
+
+            fetch('/update_account', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Details updated successfully!");
+                    location.reload();
+                } else {
+                    alert("Error updating details.");
+                }
+            });
+        }
+    </script>
 </head>
 <body>
     <h2>Your Details</h2>
 
     {% if patient %}
-    <table border="1">
-        <tr>
-            <th>Name</th>
-            <td>{{ patient[0] }}</td>
-        </tr>
-        <tr>
-            <th>Street</th>
-            <td>{{ patient[1] }}</td>
-        </tr>
-        <tr>
-            <th>Age</th>
-            <td>{{ patient[2] }}</td>
-        </tr>
-        <tr>
-            <th>Gender</th>
-            <td>{{ patient[3] }}</td>
-        </tr>
-        <tr>
-            <th>Medical Record</th>
-            <td>{{ patient[4] }}</td>
-        </tr>
-        <tr>
-            <th>Family History</th>
-            <td>{{ patient[5] }}</td>
-        </tr>
-    </table>
+    <form id="editForm">
+        <table border="1">
+            <tr>
+                <th>Name</th>
+                <td><input type="text" class="editable" name="name" value="{{ patient[0] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Street</th>
+                <td><input type="text" class="editable" name="street" value="{{ patient[1] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Zip Code</th>
+                <td><input type="text" class="editable" name="zip_code" value="{{ patient[2] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Age</th>
+                <td><input type="number" class="editable" name="age" value="{{ patient[3] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td><input type="text" class="editable" name="gender" value="{{ patient[4] }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Medical Record</th>
+                <td><textarea class="editable" name="medical_record" readonly>{{ patient[5] }}</textarea></td>
+            </tr>
+            <tr>
+                <th>Family History</th>
+                <td><textarea class="editable" name="family_history" readonly>{{ patient[6] }}</textarea></td>
+            </tr>
+        </table>
+        <br>
+        <button type="button" id="editBtn" onclick="toggleEdit()">Edit</button>
+        <button type="button" id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancel</button>
+    </form>
     {% else %}
     <p>No details available.</p>
     {% endif %}
