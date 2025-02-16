@@ -5,7 +5,31 @@
 </head>
 <body>
     <h2>Your Appointments</h2>
-    <p>List of scheduled appointments will appear here.</p>
+
+    {% if appointments %}
+    <table border="1">
+        <tr>
+            <th>Doctor Name</th>
+            <th>Specialty</th>
+            <th>Appointment Date & Time</th>
+            <th>Status</th>
+            <th>Diagnosis</th>
+            <th>Medicine</th>
+        </tr>
+        {% for appointment in appointments %}
+        <tr>
+            <td>{{ appointment[0] }}</td>
+            <td>{{ appointment[1] }}</td>
+            <td>{{ appointment[2] }}</td>
+            <td>{{ appointment[3] }}</td>
+            <td>{{ appointment[4] }}</td>
+            <td>{{ appointment[5] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No appointments found.</p>
+    {% endif %}
 
     <br>
     <a href="{{ url_for('main_page') }}">Back to Main</a>

@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask
 from routes import init_routes
 
 app = Flask(__name__)
