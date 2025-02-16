@@ -13,5 +13,9 @@
     "appointment_user": {
         "user": "appointment",
         "password": "appointment_password"
+    },
+    "docagent_user":{
+        "user": "docagent_user",
+        "password": "docagent_password"
     }
 }
