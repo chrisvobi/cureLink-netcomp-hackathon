@@ -7,6 +7,7 @@ from .doctor_route import init_doctor_route
 from .appointments_history_route import init_appointments_history_route
 from .docagent_route import init_docagent_route
 from .account_route import init_account_route
+from .doctor_appointments import init_doctor_appointments_route
 
 def init_routes(app):
     init_login_route(app)
@@ -18,4 +19,5 @@ def init_routes(app):
     init_doctor_route(app)
     init_docagent_route(app)
     init_account_route(app)
+    init_doctor_appointments_route(app)
     
