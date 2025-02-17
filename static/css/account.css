@@ -1,0 +1,90 @@
+body {
+    background-image: url('../images/backround.png');
+    background-size: cover;
+    background-position: center;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+}
+
+.container {
+    padding: 50px;
+    background: linear-gradient(to right, #B0C4FF, #6A85D3);
+    border-radius: 10px;
+    width: 60%;
+    margin: 100px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+    border-radius: 25px;
+}
+
+h2 {
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0px 0;
+    color: #333;
+}
+
+.details-table th, .details-table td {
+    padding: 10px;
+    text-align: left;
+}
+
+.details-table th {
+    background-color: #5A78E8;
+    color: white;
+    border: 2px solid black;
+    border-radius: 0px;
+}
+
+.details-table td {
+    background-color: #f9f9f9;
+    border: 2px solid black;
+    border-radius: 0px;
+}
+
+.editable {
+    border: none;
+    background: transparent;
+    width: 100%;
+    padding: 5px;
+    color: #333;
+    font-size: 16px;
+}
+
+textarea.editable {
+    resize: none;
+    height: 100px;
+}
+
+.action-button {
+    background-color: #5A78E8;
+    color: white;
+    border: 2px solid white;
+    border-radius: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.3s;
+}
+
+.action-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.cancel-button {
+    background-color: red;
+    color: white;
+}

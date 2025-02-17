@@ -1,0 +1,57 @@
+body {
+    background-image: url('../images/backround.png');
+    background-size: cover;
+    background-position: center;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+}
+
+.container {
+    padding: 50px;
+    background: linear-gradient(to right, #B0C4FF, #6A85D3);
+    border-radius: 10px;
+    width: 50%;
+    margin: 100px auto;
+}
+
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+    border-radius: 25px;
+}
+
+.welcome-message {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2E7D32;
+    margin-bottom: 30px;
+}
+
+.option {
+    margin-bottom: 30px;
+}
+
+.option p {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.action-button {
+    background-color: #5A78E8;
+    color: white;
+    border: 2px solid white;
+    border-radius: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.action-button:hover {
+    background-color: #f0f0f0;
+}
+
+.logout-button {
+    background-color: red;
+    color: white;
+}
