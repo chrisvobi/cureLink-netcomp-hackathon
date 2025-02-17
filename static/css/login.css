@@ -6,7 +6,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: linear-gradient(to right, #9BB1FF, #6A85D3);
+    background: linear-gradient(to right, #a6b9ff, #3c57a9);
     position: relative;
 }
 
@@ -37,8 +37,8 @@ body {
 /* Container */
 .container {
     display: flex;
-    width: 800px;
-    height: 450px;
+    width: 900px;
+    height: 500px;
     background: white;
     border-radius: 10px;
     overflow: hidden;
