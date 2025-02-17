@@ -41,7 +41,6 @@ def book_appointment(patient_id, appointment):
     cursor.close()
     db.close()
 
-
 def agent_choose_book_appointment(conversation, user_message, doctors):
     """openai model to choose appointments"""
     completion = client.beta.chat.completions.parse(
