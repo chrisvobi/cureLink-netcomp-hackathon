@@ -20,8 +20,8 @@
     <div class="container">
         <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
         <h2>Available Appointments</h2>
-        <p class="conversation"><strong>{{ conversation.role }}:</strong> {{ conversation.content }}</p>
-
+        <p><strong>{{ found_doctors[0]['role'] }}:</strong> {{ found_doctors[0]['content'] }}</p>
+        
 
         <table class="appointments-table">
             <tr>
