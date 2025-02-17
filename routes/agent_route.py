@@ -19,9 +19,10 @@ system_message = {
         "If unsure, keep asking questions to gather more information. "
         "Never make bold assumptions or provide a diagnosis too early."
         "If you are at least 90% confident that the symptoms are not severe, and you have ruled out that the patient needs a doctor, recommend simple at-home treatment."
+        "If you are sure that the user isn't describing symptoms and requested for a doctor, reccomend and appointment"
     ),
 }
-
+added_history = False
 conversation = [system_message]
 
 class DoctorExtraction(BaseModel):
@@ -46,7 +47,7 @@ class InputValidation(BaseModel):
 
 class RequestDoctor(BaseModel):
     specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist') that the user requested")
-    confidence_score: float = Field(description="Confidence score (0-1) for user asking for a doctor or appointment")
+    confidence_score: float = Field(description="Confidence score (0-1) that the user requested a specific doctor")
 
 
 relevance_check ={
@@ -122,6 +123,7 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
 
 
 from flask import render_template, request, session, redirect, url_for
+from utils.db_connection import get_db_connection
 
 def init_agent_route(app):
     @app.route('/agent', methods=['GET', 'POST'])
@@ -133,6 +135,35 @@ def init_agent_route(app):
             return redirect(url_for('login'))  # Redirect doctors away
         
         global conversation # Conversation history
+
+        # Add patient medical record and family history
+        global added_history
+        if not added_history:
+            patient_id = session['user_id']
+            query = """
+                SELECT age, gender, medical_record, family_history
+                FROM patients
+                WHERE patient_id = %s
+            """
+            conn = get_db_connection("patient_history")
+            cur = conn.cursor()
+            cur.execute(query, (patient_id,))
+            user_history = cur.fetchall()
+            cur.close()
+            conn.close()
+
+            age, gender, medical_record, family_history = user_history[0]
+            answer = f"I am a {gender}, {age} years old"
+            answer1 = ""
+            if medical_record != "No medical record":
+                answer1 = f", my medical record is {medical_record}"
+            answer2 = ""
+            if family_history != "No known family history":
+                answer2 = f", and my family history includes {family_history}"
+            history = answer + answer1 + answer2
+            conversation.append({"role": "user", "content": history})
+            added_history = True
+
 
         # Retrieve existing conversation from the form submission
         if request.method == 'POST':
@@ -157,7 +188,7 @@ def init_agent_route(app):
 
             # Check if user requested a specific doctor
             request_doctor = check_request_for_doctor(conversation)
-            if request_doctor.confidence_score > 0.8 and request_doctor.specialty != None:
+            if request_doctor.confidence_score > 0.95 and request_doctor.specialty != None:
                 conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is an {request_doctor.specialty}."})
                 session['specialty'] = request_doctor.specialty
                 session['conversation'] = conversation
