@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Doctor Account Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_account.css') }}">
     <script>
         function toggleEdit() {
             let inputs = document.querySelectorAll(".editable");
@@ -45,41 +46,44 @@
     </script>
 </head>
 <body>
-    <h2>Doctor Details</h2>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CureLink Logo" class="logo">
+        <h2>Doctor Account Details</h2>
 
-    {% if doctor %}
-    <form id="editForm">
-        <table border="1">
-            <tr>
-                <th>Name</th>
-                <td><input type="text" class="editable" name="name" value="{{ doctor[0] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td><input type="text" value="{{ doctor[1] }}" readonly style="border: none; background: transparent;"></td>
-            </tr>
-            <tr>
-                <th>Specialty</th>
-                <td><input type="text" class="editable" name="specialty" value="{{ doctor[2] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Zip Code</th>
-                <td><input type="text" class="editable" name="zip_code" value="{{ doctor[3] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Street</th>
-                <td><input type="text" class="editable" name="street" value="{{ doctor[4] }}" readonly></td>
-            </tr>
-        </table>
+        {% if doctor %}
+        <form id="editForm">
+            <table class="details-table">
+                <tr>
+                    <th>Name</th>
+                    <td><input type="text" class="editable" name="name" value="{{ doctor[0] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td><input type="text" class="editable" name="email" value="{{ doctor[1] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Specialty</th>
+                    <td><input type="text" class="editable" name="specialty" value="{{ doctor[2] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Zip Code</th>
+                    <td><input type="text" class="editable" name="zip_code" value="{{ doctor[3] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Street</th>
+                    <td><input type="text" class="editable" name="street" value="{{ doctor[4] }}" readonly></td>
+                </tr>
+            </table>
+            <br>
+            <button type="button" id="editBtn" class="action-button" onclick="toggleEdit()">Edit</button>
+            <button type="button" id="cancelBtn" class="action-button cancel-button" onclick="cancelEdit()" style="display: none;">Cancel</button>
+        </form>
+        {% else %}
+        <p>No details available.</p>
+        {% endif %}
+
         <br>
-        <button type="button" id="editBtn" onclick="toggleEdit()">Edit</button>
-        <button type="button" id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancel</button>
-    </form>
-    {% else %}
-    <p>No details available.</p>
-    {% endif %}
-
-    <br>
-    <a href="{{ url_for('doctor_page') }}">Back to Doctor Main Page</a>
+        <a href="{{ url_for('doctor_page') }}" class="action-button">Back to Doctor Main Page</a>
+    </div>
 </body>
 </html>

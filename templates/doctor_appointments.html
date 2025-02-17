@@ -2,34 +2,38 @@
 <html>
 <head>
     <title>Doctor's Appointments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_appointments.css') }}">
 </head>
 <body>
-    <h2>Your Past Appointments</h2>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
+        <h2>Your Past Appointments</h2>
 
-    {% if appointments %}
-    <table border="1">
-        <tr>
-            <th>Patient Name</th>
-            <th>Appointment Date & Time</th>
-            <th>Status</th>
-            <th>Diagnosis</th>
-            <th>Medicine</th>
-        </tr>
-        {% for appointment in appointments %}
-        <tr>
-            <td>{{ appointment[0] }}</td>
-            <td>{{ appointment[1] }}</td>
-            <td>{{ appointment[2] }}</td>
-            <td>{{ appointment[3] }}</td>
-            <td>{{ appointment[4] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No appointments found.</p>
-    {% endif %}
+        {% if appointments %}
+        <table class="appointments-table">
+            <tr>
+                <th>Patient Name</th>
+                <th>Appointment Date & Time</th>
+                <th>Status</th>
+                <th>Diagnosis</th>
+                <th>Medicine</th>
+            </tr>
+            {% for appointment in appointments %}
+            <tr>
+                <td>{{ appointment[0] }}</td>
+                <td>{{ appointment[1] }}</td>
+                <td>{{ appointment[2] }}</td>
+                <td>{{ appointment[3] }}</td>
+                <td>{{ appointment[4] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-appointments">No appointments found.</p>
+        {% endif %}
 
-    <br>
-    <a href="{{ url_for('doctor_page') }}">Back to Doctor Page</a>
+        <br>
+        <a class="action-button" href="{{ url_for('doctor_page') }}">Back to Doctor Page</a>
+    </div>
 </body>
 </html>

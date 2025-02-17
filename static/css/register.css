@@ -3,16 +3,27 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     background: linear-gradient(to right, #9BB1FF, #6A85D3);
+}
+
+.logo-top {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.logo-top img {
+    width: 120px;
+    border-radius: 25px;
 }
 
 .container {
     display: flex;
-    width: 800px;
-    height: 450px;
+    width: 900px;
+    height: 900px;
     background: white;
     border-radius: 10px;
     overflow: hidden;
@@ -21,7 +32,7 @@ body {
 
 .left-section {
     width: 50%;
-    padding: 40px;
+    padding: 30px;
     background: #B0C4FF;
     display: flex;
     flex-direction: column;
@@ -38,14 +49,9 @@ body {
 
 .logo-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
-}
-
-.logo-container img {
-    width: 100px; 
-    border-radius: 25px;
-    margin-right: 10px;
 }
 
 h2 {
@@ -54,7 +60,39 @@ h2 {
     font-weight: bold;
 }
 
-input {
+.flash-messages {
+    margin-bottom: 15px;
+}
+
+.flash {
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.flash.success {
+    background-color: #8BC34A;
+    color: #2E7D32;
+}
+
+.flash.danger {
+    background-color: #FFCDD2;
+    color: #C62828;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    color: #333;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+form input,
+form select {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -63,57 +101,31 @@ input {
     background: #f1f1f1;
 }
 
-button {
-    width: 30%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 10px;
-    border: none;
-    border-radius: 20px;
-    background: #5A78E8;
+form button {
+    background: #6A85D3;
     color: white;
-    font-size: 16px;
+    border: none;
+    padding: 10px;
+    border-radius: 20px;
     cursor: pointer;
-    transition: 0.3s;
+    font-size: 16px;
+    transition: background 0.3s;
 }
 
-button:hover {
-    background: #4055C9;
+form button:hover {
+    background: #576BB1;
 }
 
 p {
-    font-size: 14px;
+    margin-top: 10px;
     color: #333;
-    text-align: center;
 }
 
-a {
-    color: #0000FF;
-    font-weight: bold;
+p a {
+    color: #6A85D3;
     text-decoration: none;
 }
 
-a:hover {
+p a:hover {
     text-decoration: underline;
-}
-
-.flash-messages {
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.flash {
-    padding: 10px;
-    border-radius: 5px;
-    text-align: center;
-    font-weight: bold;
-}
-
-
-.flash.danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
 }

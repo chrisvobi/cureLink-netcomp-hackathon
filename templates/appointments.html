@@ -2,32 +2,53 @@
 <html>
 <head>
     <title>Available Appointments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/appointments.css') }}">
+    <script>
+        function toggleAppointments(button, rowId) {
+            var appointmentsRow = document.getElementById(rowId);
+            if (appointmentsRow.style.display === "none") {
+                appointmentsRow.style.display = "table-row";
+                button.innerText = "Hide Available Appointments";
+            } else {
+                appointmentsRow.style.display = "none";
+                button.innerText = "To see available appointments click here";
+            }
+        }
+    </script>
 </head>
 <body>
-    <h2>Available Appointments</h2>
-    <p><strong>{{ found_doctors[0]['role'] }}:</strong> {{ found_doctors[0]['content'] }}</p>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
+        <h2>Available Appointments</h2>
+        <p class="conversation"><strong>{{ conversation.role }}:</strong> {{ conversation.content }}</p>
 
-    <br>
 
-    <table border="1">
-        <tr>
-            <th>Name</th>
-            <th>Specialty</th>
-            <th>Address</th>
-            <th>Distance (km)</th>
-            <th>Available Appointments</th>
-        </tr>
-        {% for doctor in doctors %}
+        <table class="appointments-table">
             <tr>
-                <td>{{ doctor.name }}</td>
-                <td>{{ doctor.specialty }}</td>
-                <td>{{ doctor.street }}, {{ doctor.city }}</td>
-                <td>{{ "%.2f"|format(doctor.distance_km) }}</td>
-                <td>{{ doctor.available_slots if doctor.available_slots else "No available slots" }}</td>
+                <th>Name</th>
+                <th>Specialty</th>
+                <th>Address</th>
+                <th>Distance (km)</th>
+                <th>Available Appointments</th>
             </tr>
-        {% endfor %}
-    </table>
-
+            {% for doctor in doctors %}
+                <tr>
+                    <td>{{ doctor.name }}</td>
+                    <td>{{ doctor.specialty }}</td>
+                    <td>{{ doctor.street }}, {{ doctor.city }}</td>
+                    <td>{{ "%.2f"|format(doctor.distance_km) }}</td>
+                    <td>
+                        <button class="toggle-button" onclick="toggleAppointments(this, 'appointments-{{ loop.index }}')">To see available appointments click here</button>
+                        <div id="appointments-{{ loop.index }}" style="display: none;">
+                            {{ doctor.available_slots if doctor.available_slots else "No available slots" }}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+    </div>
+  
     <br>
     <form action="{{ url_for('appointments_page') }}" method="post">
         <label for="user_message">Your Message:</label><br>
@@ -36,6 +57,7 @@
         <button type="submit">Send Message</button>
     </form>
     
-    <a href="{{ url_for('main_page') }}">Back to Main</a>
+    <a class="action-button" href="{{ url_for('main_page') }}">Back to Main</a>
+
 </body>
 </html>

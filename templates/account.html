@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Account Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
     <script>
         function toggleEdit() {
             let inputs = document.querySelectorAll(".editable");
@@ -9,8 +10,8 @@
 
             inputs.forEach(input => {
                 input.readOnly = !isEditing;
-                input.style.border = isEditing ? "1px solid black" : "none";
-                input.style.background = isEditing ? "#f8f8f8" : "transparent";
+                input.style.border = isEditing ? "1px solid #ccc" : "none";
+                input.style.background = isEditing ? "white" : "transparent";
             });
 
             document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
@@ -22,7 +23,7 @@
         }
 
         function cancelEdit() {
-            location.reload(); // Reload the page to discard changes
+            location.reload(); 
         }
 
         function saveChanges() {
@@ -45,54 +46,56 @@
     </script>
 </head>
 <body>
-    <h2>Your Details</h2>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="CureLink Logo" class="logo">
+        <h2>Your Details</h2>
 
-    {% if patient %}
-    <form id="editForm">
-        <table border="1">
-            <tr>
-                <th>Name</th>
-                <td><input type="text" class="editable" name="name" value="{{ patient[0] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td><input type="email" name="email" value="{{ patient[7] }}" readonly></td>
-            </tr>
-            
-            <tr>
-                <th>Street</th>
-                <td><input type="text" class="editable" name="street" value="{{ patient[1] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Zip Code</th>
-                <td><input type="text" class="editable" name="zip_code" value="{{ patient[2] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Age</th>
-                <td><input type="number" class="editable" name="age" value="{{ patient[3] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Gender</th>
-                <td><input type="text" class="editable" name="gender" value="{{ patient[4] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Medical Record</th>
-                <td><textarea class="editable" name="medical_record" readonly>{{ patient[5] }}</textarea></td>
-            </tr>
-            <tr>
-                <th>Family History</th>
-                <td><textarea class="editable" name="family_history" readonly>{{ patient[6] }}</textarea></td>
-            </tr>
-        </table>
+        {% if patient %}
+        <form id="editForm">
+            <table class="details-table">
+                <tr>
+                    <th>Name</th>
+                    <td><input type="text" class="editable" name="name" value="{{ patient[0] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td><input type="email" class="editable" name="email" value="{{ patient[7] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Street</th>
+                    <td><input type="text" class="editable" name="street" value="{{ patient[1] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Zip Code</th>
+                    <td><input type="text" class="editable" name="zip_code" value="{{ patient[2] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Age</th>
+                    <td><input type="number" class="editable" name="age" value="{{ patient[3] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Gender</th>
+                    <td><input type="text" class="editable" name="gender" value="{{ patient[4] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Medical Record</th>
+                    <td><textarea class="editable" name="medical_record" readonly>{{ patient[5] }}</textarea></td>
+                </tr>
+                <tr>
+                    <th>Family History</th>
+                    <td><textarea class="editable" name="family_history" readonly>{{ patient[6] }}</textarea></td>
+                </tr>
+            </table>
+            <br>
+            <button type="button" id="editBtn" class="action-button" onclick="toggleEdit()">Edit</button>
+            <button type="button" id="cancelBtn" class="action-button cancel-button" onclick="cancelEdit()" style="display: none;">Cancel</button>
+        </form>
+        {% else %}
+        <p>No details available.</p>
+        {% endif %}
+
         <br>
-        <button type="button" id="editBtn" onclick="toggleEdit()">Edit</button>
-        <button type="button" id="cancelBtn" onclick="cancelEdit()" style="display: none;">Cancel</button>
-    </form>
-    {% else %}
-    <p>No details available.</p>
-    {% endif %}
-
-    <br>
-    <a href="{{ url_for('main_page') }}">Back to Main Page</a>
+        <a href="{{ url_for('main_page') }}" class="action-button">Back to Main Page</a>
+    </div>
 </body>
 </html>
