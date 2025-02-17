@@ -22,6 +22,7 @@
         <h2>Available Appointments</h2>
         <p class="conversation"><strong>{{ conversation.role }}:</strong> {{ conversation.content }}</p>
 
+
         <table class="appointments-table">
             <tr>
                 <th>Name</th>
@@ -45,9 +46,18 @@
                 </tr>
             {% endfor %}
         </table>
-
         <br>
-        <a class="action-button" href="{{ url_for('main_page') }}">Back to Main</a>
     </div>
+  
+    <br>
+    <form action="{{ url_for('appointments_page') }}" method="post">
+        <label for="user_message">Your Message:</label><br>
+        <textarea id="user_message" name="user_message" rows="4" cols="50" required></textarea><br><br>
+        
+        <button type="submit">Send Message</button>
+    </form>
+    
+    <a class="action-button" href="{{ url_for('main_page') }}">Back to Main</a>
+
 </body>
 </html>
