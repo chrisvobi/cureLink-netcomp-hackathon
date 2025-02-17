@@ -22,10 +22,13 @@ system_message = {
         "Never make bold assumptions or provide a diagnosis too early."
         "If you are at least 90% confident that the symptoms are not severe, and you have ruled out that the patient needs a doctor, recommend simple at-home treatment."
         "If you are sure that the user isn't describing symptoms and requested for a doctor, reccomend and appointment"
+        "You have to take into account if the user needs a doctor with PWD access and recommend the closest specialty from the database."
     ),
 }
 added_history = False
 conversation = [system_message]
+class PWDCheck(BaseModel):
+    needs_pwd: bool = Field(description="Indicates whether the user needs a doctor with PWD access")
 
 class DoctorExtraction(BaseModel):
     diagnosis: str = Field(description="Possible diagnosis based on the user's symptoms")
@@ -50,13 +53,20 @@ class InputValidation(BaseModel):
 class RequestDoctor(BaseModel):
     specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist') that the user requested")
     confidence_score: float = Field(description="Confidence score (0-1) that the user requested a specific doctor")
-
+    needs_pwd_access: bool = Field(description="Indicates whether the user needs a doctor with PWD access")
 
 relevance_check ={
     "role": "system",
     "content": ("You are a medical assisant that classifies whether a given input is medically relevant."
     "User input must contain health related or medical terms.")
 }
+def ask_pwd_access(conversation) -> PWDCheck:
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=conversation,
+        response_format=PWDCheck,
+    )
+    return completion.choices[0].message.parsed
 # Function to check if user input is relevant
 def validate_input(user_message,conversation) -> bool:
     """
@@ -124,11 +134,19 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
     return completion.choices[0].message.parsed
 
 # get the closest specialty from the database
-def get_closest_specialty(specialty):
+def get_closest_specialty(specialty, needs_pwd_access=False):
     # fetch all specialties from the database
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=[{"role": "system", "content": "Get specialties from the database, taking into account if the user needs a doctor with PWD access."}],
+        response_format=DoctorExtraction,
+    )
     db = get_db_connection("login_user")
     cursor = db.cursor()
-    query = """SELECT DISTINCT(specialty) FROM doctors"""
+    if needs_pwd_access:
+        query = """SELECT DISTINCT(specialty) FROM doctors WHERE pwd_access = TRUE"""
+    else:
+        query = """SELECT DISTINCT(specialty) FROM doctors"""
     cursor.execute(query)
     specialties = [row[0] for row in cursor.fetchall()]
     cursor.close()
@@ -189,7 +207,7 @@ def init_agent_route(app):
             conversation.append({"role": "user", "content": history})
             added_history = True
 
-
+        session["needs_pwd_access"] = None
         # Retrieve existing conversation from the form submission
         if request.method == 'POST':
             conversation = eval(request.form['conversation'])  # Convert string back to list
@@ -210,45 +228,50 @@ def init_agent_route(app):
                 conversation.append({"role": "assistant", "content": answer})
                 return render_template('agent.html', conversation=conversation)
                 # Stop the loop as emergency action is needed
-
             # Check if user requested a specific doctor
             request_doctor = check_request_for_doctor(conversation)
             if request_doctor.confidence_score > 0.95 and request_doctor.specialty != None:
-                # check for the specialty in the database
-                request_doctor.specialty = get_closest_specialty(request_doctor.specialty)
-                if request_doctor.specialty is not None:
-                    conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}."})
-                    session['specialty'] = request_doctor.specialty
-                    session['conversation'] = conversation
-                    return render_template('agent.html', conversation=conversation, button=True)
-                else:
-                    conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
-                    return render_template('agent.html', conversation=conversation)
 
-            # Check if the agent can extract confidently a specialty
-            doctor_extraction = extract_doctor(conversation)
-            if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
-                # find the closest specialty in the database
-                doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty)
-                if doctor_extraction.specialty is not None:
-                    conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
-                    session['specialty'] = doctor_extraction.specialty
-                    session['conversation'] = conversation
-                    return render_template('agent.html', conversation=conversation, button=True)
-                # if specialty not in database (not correct specialty)
-                else:
-                    conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
-                    return render_template('agent.html', conversation=conversation)
+                pwd_access = ask_pwd_access(conversation)
+                session["needs_pwd_access"] = pwd_access.needs_pwd
+                # check for the specialty in the database
+            request_doctor.specialty = get_closest_specialty(request_doctor.specialty, needs_pwd_access = pwd_access.needs_pwd)
+            if request_doctor.specialty is not None:
+                conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}."})
+                session['specialty'] = request_doctor.specialty
+                session['conversation'] = conversation
+                return render_template('agent.html', conversation=conversation, button=True)
+            else:
+                conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
+                return render_template('agent.html', conversation=conversation)
+        # Check if the agent can extract confidently a specialty
+        doctor_extraction = extract_doctor(conversation)
+        if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
+            # find the closest specialty in the database
+
+            pwd_check = ask_pwd_access(conversation)
+            session["needs_pwd_access"] = pwd_check.needs_pwd
             
-            # If after some questions there is no clear specialty needed, check if symptoms are not sever
-            if len(conversation) > 12:
-                not_severe_symptoms = extract_symptoms_not_severe(conversation)
-                if not_severe_symptoms.confidence_score > 0.9:
-                    treatment = not_severe_symptoms.at_home_treatment
-                    conversation.append({"role": "assistant", "content": f"Based on your symptoms, you might not have a severe condition. I recommend {treatment}."})
-                    return render_template('agent.html', conversation=conversation)
-            
-            # Ask next question
-            question = ask_question(conversation)
-            conversation.append({"role": "assistant", "content": question.question})
+            doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty, needs_pwd_access=pwd_check.needs_pwd)
+            if doctor_extraction.specialty is not None:
+                conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
+                session['specialty'] = doctor_extraction.specialty
+                session['conversation'] = conversation
+                return render_template('agent.html', conversation=conversation, button=True)
+            # if specialty not in database (not correct specialty)
+            else:
+                conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
+                return render_template('agent.html', conversation=conversation)
+        
+        # If after some questions there is no clear specialty needed, check if symptoms are not sever
+        if len(conversation) > 12:
+            not_severe_symptoms = extract_symptoms_not_severe(conversation)
+            if not_severe_symptoms.confidence_score > 0.9:
+                treatment = not_severe_symptoms.at_home_treatment
+                conversation.append({"role": "assistant", "content": f"Based on your symptoms, you might not have a severe condition. I recommend {treatment}."})
+                return render_template('agent.html', conversation=conversation)
+        
+        # Ask next question
+        question = ask_question(conversation)
+        conversation.append({"role": "assistant", "content": question.question})
         return render_template('agent.html', conversation=conversation)
