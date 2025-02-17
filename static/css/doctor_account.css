@@ -16,6 +16,12 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+    border-radius: 25px;
+}
+
 h2 {
     color: #333;
     font-size: 28px;

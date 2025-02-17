@@ -12,12 +12,12 @@ def init_doctor_appointments_route(app):
 
         doctor_id = session['user_id']
         query = """
-            SELECT patients.name, available_slots.date_time, appointments.status, appointments.diagnosis, appointments.medicine
+            SELECT DISTINCT patients.name, available_slots.date_time, appointments.status, appointments.diagnosis, appointments.medicine
             FROM appointments
             JOIN patients ON appointments.patient_id = patients.patient_id
             JOIN available_slots ON appointments.slot_id = available_slots.slot_id
             WHERE appointments.doctor_id = %s
-            ORDER BY available_slots.date_time DESC
+            ORDER BY available_slots.date_time DESC;
         """
 
         conn = get_db_connection("appointment_history_user")
