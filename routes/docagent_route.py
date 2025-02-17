@@ -206,8 +206,6 @@ def create_appointments(conversation, user_message):
     return call
 
 def call_function(name, args):
-    global conversation
-    conversation = [system_message]
     if name == "insert_slots":
         return insert_slots(**args)
     elif name == "insert_slots2":
