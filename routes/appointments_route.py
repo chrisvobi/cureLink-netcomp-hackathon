@@ -246,6 +246,17 @@ def find_doctors_by_criteria(specialty):
     cursor.close()
     db.close()
 
+    # check if the date is in the future
+    today = datetime.today()
+    correct_slots = []
+    for doctor in doctor_distances:
+        list_slots = doctor['available_slots'].split(', ')
+        for slot in list_slots:
+            if datetime.strptime(slot, '%Y-%m-%d %H:%M:%S') > today:
+                correct_slots.append(slot)
+        list_slots =", ".join(slot for slot in correct_slots)
+        doctor['available_slots'] = list_slots
+    
     return doctor_distances
 
 
