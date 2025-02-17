@@ -1,40 +1,86 @@
-<!doctype html>
-<html>
-<head><title>Register Page</title></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
 <body>
-    <h2>Register Page</h2>
+    <!-- Logo πάνω από το container στην μέση -->
+    <div class="logo-top">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo">
+    </div>
 
-    {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="container">
+        <div class="left-section">
+            <div class="logo-container">
+                <h2>Register Page</h2>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <p class="flash {{ category }}">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <form action="{{ url_for('register') }}" method="post">
+                <label>Name:</label>
+                <input type="text" name="name" required>
+                
+                <label>Email:</label>
+                <input type="email" name="email" required>
+                
+                <label>Password:</label>
+                <input type="password" name="password" required>
+                
+                <label>Zip Code:</label>
+                <input type="text" name="zip_code" required>
+                
+                <label>Street:</label>
+                <input type="text" name="street" required>
+                
+                <label>City:</label>
+                <input type="text" name="city" required>
+                
+                <label>Register as:</label>
+                <select name="user_type" id="user_type" required onchange="toggleSpecialtyField()">
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                </select>
 
-    <form action="{{ url_for('register') }}" method="post">
-        <label>Name:</label>
-        <input type="text" name="name" required><br><br>
+                <!-- Specialty field (hidden by default) -->
+                <div id="specialty_field" style="display: none;">
+                    <label>Specialty:</label>
+                    <input type="text" name="specialty" id="specialty">
+                </div>
 
-        <label>Email:</label>
-        <input type="email" name="email" required><br><br>
+                <button type="submit">Register</button>
+            </form>
 
-        <label>Password:</label>
-        <input type="password" name="password" required><br><br>
+            <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        </div>
 
-        <label>Zip Code:</label>
-        <input type="text" name="zip_code" required><br><br>
+        <div class="right-section"></div>
+    </div>
 
-        <label>Street:</label>
-        <input type="text" name="street" required><br><br>
+    <script>
+    function toggleSpecialtyField() {
+        var userType = document.getElementById("user_type").value;
+        var specialtyField = document.getElementById("specialty_field");
 
-        <label>City:</label>
-        <input type="text" name="city" required><br><br>
-
-        <button type="submit">Register</button>
-    </form>
-
-    <br>
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        if (userType === "doctor") {
+            specialtyField.style.display = "block";
+            document.getElementById("specialty").setAttribute("required", "true");
+        } else {
+            specialtyField.style.display = "none";
+            document.getElementById("specialty").removeAttribute("required");
+        }
+    }
+    </script>
 </body>
 </html>

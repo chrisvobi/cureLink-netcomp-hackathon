@@ -7,8 +7,7 @@
     },
     "register_user": {
         "user": "register_user",
-        "password": "register_user_password"
-       
+        "password": "register_user_password" 
     },
     "appointment_user": {
         "user": "appointment",
@@ -22,8 +21,16 @@
         "user": "appointment_history",
         "password": "appointment_history_password"
     },
+    "patient_history": {
+        "user": "patient_history",
+        "password": "patient_history_password"
+    },
     "account_user": {
         "user": "account",
         "password": "account_password"
+    },
+    "doc_account_user": {
+        "user": "doc_account",
+        "password": "doc_account_password"
     }
 }

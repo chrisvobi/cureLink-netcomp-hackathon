@@ -4,11 +4,12 @@ from utils.db_connection import get_db_connection
 from utils.valid_email import is_valid_email
 from utils.valid_zipcode import is_valid_zip
 
-def get_first_available_patient_id(cursor):
-    """Finds the first available patient_id in the patients table."""
-    cursor.execute("SELECT patient_id FROM patients ORDER BY patient_id ASC")
+def get_first_available_id(cursor, table_name, id_column):
+    """Finds the first available ID in the given table."""
+    query = f"SELECT {id_column} FROM {table_name} ORDER BY {id_column} ASC"
+    cursor.execute(query)
     existing_ids = [row[0] for row in cursor.fetchall()]
-    
+
     # Find the smallest missing number in the sequence
     expected_id = 1
     for existing_id in existing_ids:
@@ -45,6 +46,9 @@ def init_register_route(app):
             zip_code = request.form['zip_code']
             street = request.form['street']
             city = request.form['city']
+            user_type = request.form['user_type']
+
+            specialty = request.form.get('specialty') if user_type == "doctor" else None  # Only get if doctor
 
             if not is_valid_email(email):
                 flash("Invalid email format!", "danger")
@@ -53,10 +57,11 @@ def init_register_route(app):
             if not is_valid_zip(zip_code):
                 flash("Invalid zip code!", "danger")
                 return render_template('register.html')
-            
+
             if not name or not email or not password or not zip_code or not street or not city:
                 flash("All fields are required!", "danger")
                 return render_template('register.html')
+
             # Hash the password before storing it
             hashed_password = generate_password_hash(password, method='pbkdf2:sha512')
 
@@ -70,21 +75,30 @@ def init_register_route(app):
                 cursor.close()
                 db.close()
                 return render_template('register.html')
-            
-            # Check if the email already exists
-            cursor.execute("SELECT * FROM patients WHERE email = %s", (email,))
-            existing_user = cursor.fetchone()
 
-            if existing_user:
+            # Check if the email already exists in patients or doctors
+            cursor.execute("SELECT * FROM patients WHERE email = %s", (email,))
+            existing_patient = cursor.fetchone()
+
+            cursor.execute("SELECT * FROM doctors WHERE email = %s", (email,))
+            existing_doctor = cursor.fetchone()
+
+            if existing_patient or existing_doctor:
                 flash("Email is already registered. Please log in.", "danger")
             else:
+                if user_type == "patient":
+                    patient_id = get_first_available_id(cursor, "patients", "patient_id")
+                    cursor.execute(
+                        "INSERT INTO patients (patient_id, name, email, password, zip_code, street) VALUES (%s, %s, %s, %s, %s, %s)",
+                        (patient_id, name, email, hashed_password, zip_code, street)
+                    )
+                elif user_type == "doctor":
+                    doctor_id = get_first_available_id(cursor, "doctors", "doctor_id")
+                    cursor.execute(
+                        "INSERT INTO doctors (doctor_id, name, email, password, zip_code, street, specialty) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                        (doctor_id, name, email, hashed_password, zip_code, street, specialty)
+                    )
 
-                patient_id = get_first_available_patient_id(cursor)
-
-                cursor.execute(
-                    "INSERT INTO patients (patient_id, name, email, password, zip_code, street) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (patient_id, name, email, hashed_password, zip_code, street)
-                )
                 db.commit()
                 flash("Registration successful! You can now log in.", "success")
                 return redirect(url_for('login'))

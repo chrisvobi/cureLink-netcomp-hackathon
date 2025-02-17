@@ -56,17 +56,17 @@ def generate_timedates(start_day: str, start_time: str, interval=60, end_day=Non
         date = today + timedelta(days=days_ahead)
         if end_time is None:
             start_time = datetime.strptime(start_time, "%H:%M:%S")
-            timedates.append(f"{date.strftime("%Y-%m-%d")} {start_time.strftime("%H:%M:%S")}")
+            timedates.append(f"{date.strftime('%Y-%m-%d')} {start_time.strftime('%H:%M:%S')}")
         else:
             times = generate_times_in_range(start_time, end_time, interval)
             for time in times:
-                timedates.append(f"{date.strftime("%Y-%m-%d")} {time}")
+                timedates.append(f"{date.strftime('%Y-%m-%d')} {time}")
     else:
         dates = get_dates_in_range(start_day, end_day)
         if end_time is None:
             start_time = datetime.strptime(start_time, "%H:%M:%S")
             for date in dates:
-                timedates.append(f"{date} {start_time.strftime("%H:%M:%S")}")
+                timedates.append(f"{date} {start_time.strftime('%H:%M:%S')}")
         else:
             times = generate_times_in_range(start_time, end_time, interval)
             for date in dates:
@@ -313,9 +313,11 @@ def init_docagent_route(app):
     def docagent_page():
         if 'user_id' not in session:
             return redirect(url_for('login'))  # Redirect if not logged in
+
+        if session.get('user_type') != "doctor":  
+            return redirect(url_for('login'))  # Redirect patients away
         
         global conversation # current conversation
-
         print(conversation)
 
         if request.method == 'POST':
