@@ -157,8 +157,17 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
     date_times = cursor.fetchall()
     date_times = [str(date_times[i]['date_time']) for i in range(len(date_times))]
 
-    # only keep the dates that are greater than the latest date
+    # only keep the dates that are in the future and not already in the database
+    today = datetime.today()
+    correct_dates = []
     correct_dates = [date for date in timedates if date not in date_times]
+
+    for date in timedates:
+        if date not in date_times:
+            if datetime.strptime(date, '%Y-%m-%d %H:%M:%S') > today:
+                correct_dates.append(date)
+    
+
 
     for date in correct_dates:
         query = """
@@ -173,7 +182,7 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
     if len(correct_dates) > 0:
         return f"Successfully added {len(correct_dates)} slots."
     else:
-        return "No slots were added as you already have slots for these dates"
+        return "No slots were added as you already have slots for these dates or they are in the past."
 
 def create_appointments(conversation, user_message):
     """openai model to create appointments"""
