@@ -5,7 +5,7 @@
 </head>
 <body>
     <h2>Available Appointments</h2>
-    <p><strong>{{ conversation.role }}:</strong> {{ conversation.content }}</p>
+    <p><strong>{{ found_doctors[0]['role'] }}:</strong> {{ found_doctors[0]['content'] }}</p>
 
     <br>
 
@@ -29,6 +29,13 @@
     </table>
 
     <br>
+    <form action="{{ url_for('appointments_page') }}" method="post">
+        <label for="user_message">Your Message:</label><br>
+        <textarea id="user_message" name="user_message" rows="4" cols="50" required></textarea><br><br>
+        
+        <button type="submit">Send Message</button>
+    </form>
+    
     <a href="{{ url_for('main_page') }}">Back to Main</a>
 </body>
 </html>

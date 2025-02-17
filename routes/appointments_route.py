@@ -1,8 +1,110 @@
-from flask import render_template, session, redirect, url_for
+from flask import render_template, session, redirect, url_for, request
 import math
 import requests
 import json
 from utils.db_connection import get_db_connection 
+from openai import OpenAI
+
+def choose_appointment (name, date_time, doctors):
+    for doctor in doctors:
+        if not doctor['available_slots']: return None
+        if name.lower() in doctor['name'].lower() and date_time in doctor['available_slots']:
+            return {"doctor_id": doctor['doctor_id'], "date_time": date_time}
+        else: return None
+
+def book_appointment(patient_id, appointment):
+    db = get_db_connection("appointment_user")
+    if db is None:
+        return
+    cursor = db.cursor(dictionary=True)
+
+    query = """
+    SELECT slot_id from available_slots
+    where doctor_id = %s and date_time = %s
+"""
+    cursor.execute(query, (appointment['doctor_id'], appointment['date_time']))
+    slot_id = cursor.fetchone()
+
+    query = """
+    INSERT INTO appointments (patient_id, doctor_id, slot_id, status)
+    VALUES (%s, %s, %s, %s)
+"""
+    cursor.execute(query, (patient_id, appointment['doctor_id'], slot_id['slot_id'], "scheduled"))
+
+    query = """
+    UPDATE available_slots
+    SET booked = 1
+    WHERE slot_id = %s
+"""
+    cursor.execute(query, (slot_id['slot_id'],))
+    db.commit()
+    cursor.close()
+    db.close()
+
+
+def agent_choose_book_appointment(conversation, user_message, doctors):
+    """openai model to choose appointments"""
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages = conversation + [{"role": "user", "content": user_message}],
+        functions = functions_description,
+        function_call = "auto",)
+    output = completion.choices[0].message
+    if output.function_call is None:
+        return output.content
+    params = json.loads(output.function_call.arguments) 
+
+    appointment = choose_appointment (params["name"], params["date_time"], doctors)
+    patient_id = session["user_id"]
+    book_appointment(patient_id, appointment)
+    return None
+
+
+# Load API key
+with open('config.json') as config_file:
+    config = json.load(config_file)
+    key = config['KEY']
+
+client = OpenAI(api_key=key)
+model = "gpt-4o-mini"
+# Define the Pydantic model for structured output
+
+system_message = {
+    "role": "system",
+    "content": ( "You are an appointmentbooking assistant designed to help the user book an appointment."
+        "Your goal is to help the user choose and book an appointment in a structured database. "
+        "You ensure accurate data entry, prevent duplicate entries, validate appointment times, and format the data correctly."
+        "Your responses should be clear, concise, and professional."
+        "if the year is not provided, assume it is the current year"
+        "if the month is not provided, assume it is the current month"
+        "if year or month have already passed, ask for clarification"
+        "if user says something irrelevant remind them your purpose"
+        "if user provides a doctor name, a date and a time, call function extract_data"
+        "Never ask for user confirmation"
+        
+    ),
+}
+
+conversation = [system_message]
+
+functions_description = [{
+    "name":"extract_data",
+    "description":"Extract parameters from user input",
+    "parameters":{
+        "type":"object",
+        "properties":{
+            "name":{
+                "type":"string",
+                "description":"Name of the doctor"
+            },
+            "date_time":{
+                "type":"string",
+                "description":"Date and time of the appointment (YYYY-MM-DD HH:MM)"
+            }
+        },
+        "required":["name","date_time"]
+    }
+}]
 
 
 with open('config.json') as config_file:
@@ -84,10 +186,12 @@ def find_doctors_by_criteria(specialty):
 
     return doctor_distances
 
-    
+
+checked_doctors = False
+found_doctors=[]
 
 def init_appointments_route(app):
-    @app.route('/appointments')
+    @app.route('/appointments', methods=['GET', 'POST'])
     def appointments_page():
         if 'user_id' not in session:
             return redirect(url_for('login'))  # Redirect if not logged in
@@ -96,25 +200,40 @@ def init_appointments_route(app):
             return redirect(url_for('login'))  # Redirect doctors away
         
         specialty = session['specialty']
-        conversation = session['conversation']
+        global conversation # current conversation not previous
         doctors = find_doctors_by_criteria(specialty)
-        if doctors:
-                conversation.append({
+        global checked_doctors
+        if not checked_doctors:
+            checked_doctors = True
+            
+            global found_doctors
+            if doctors:
+                    found_doctors.append({
+                        "role": "assistant",
+                        "content": f"I found {len(doctors)} {specialty}(s) near you. Here are some options:"
+                    })
+            else:
+                found_doctors.append({
                     "role": "assistant",
-                    "content": f"I found {len(doctors)} {specialty}(s) near you. Here are some options:"
+                    "content": f"Sorry, I couldn't find any {specialty}(s) near you. Please try again later."
                 })
-        else:
-            conversation.append({
-                "role": "assistant",
-                "content": f"Sorry, I couldn't find any {specialty}(s) near you. Please try again later."
-            })
-            doctors = [{
-                    "name": None,
-                    "specialty": None,
-                    "street": None,
-                    "city": None,
-                    "distance_km": 0,
-                    "available_slots": None
-                }]
+                doctors = [{
+                        "name": None,
+                        "specialty": None,
+                        "street": None,
+                        "city": None,
+                        "distance_km": 0,
+                        "available_slots": None
+                    }]
 
-        return render_template('appointments.html', conversation=conversation[-1], doctors=doctors)  
+
+        if request.method == 'POST':
+            #conversation = eval(request.form['conversation'])  # Convert string back to list
+            user_message = request.form['user_message']
+
+            response = agent_choose_book_appointment(conversation, user_message, doctors)
+
+            conversation.append({"role": "user", "content": user_message})
+            conversation.append({"role": "assistant", "content": response})
+
+        return render_template('appointments.html', conversation=conversation, doctors=doctors, found_doctors=found_doctors)  
