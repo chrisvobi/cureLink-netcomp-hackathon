@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Redirect Page</title>
+    <title>Doctor Main Page</title>
 </head>
 <body>
     <h2>Welcome back doctor!!</h2>
@@ -16,6 +16,18 @@
     <p>Or, view your appointments:</p>
     <form action="{{ url_for('doctor_appointments') }}" method="get">
         <button type="submit">View Your Appointments</button>
-    </form>    
+    </form> 
+    
+    <p class="option-text">To view your account details:</p>
+    <form action="{{ url_for('doctor_account_page') }}" method="get">
+        <button type="submit" class="action-button">View Account</button>
+    </form>
+
+    <p class="option-text">Logout from the system:</p>
+    <form action="{{ url_for('logout') }}" method="get">
+        <button type="submit" class="action-button logout-button" style="background-color: red; color: white;">
+            Logout
+        </button>
+    </form>
 </body>
 </html>

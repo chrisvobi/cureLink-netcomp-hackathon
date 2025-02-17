@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Account Details</title>
+    <title>Doctor Account Details</title>
     <script>
         function toggleEdit() {
             let inputs = document.querySelectorAll(".editable");
@@ -28,7 +28,7 @@
         function saveChanges() {
             let formData = new FormData(document.getElementById("editForm"));
 
-            fetch('/update_account', {
+            fetch('/update_doctor_account', {
                 method: 'POST',
                 body: formData
             })
@@ -45,43 +45,30 @@
     </script>
 </head>
 <body>
-    <h2>Your Details</h2>
+    <h2>Doctor Details</h2>
 
-    {% if patient %}
+    {% if doctor %}
     <form id="editForm">
         <table border="1">
             <tr>
                 <th>Name</th>
-                <td><input type="text" class="editable" name="name" value="{{ patient[0] }}" readonly></td>
+                <td><input type="text" class="editable" name="name" value="{{ doctor[0] }}" readonly></td>
             </tr>
             <tr>
                 <th>Email</th>
-                <td><input type="email" name="email" value="{{ patient[7] }}" readonly></td>
+                <td><input type="text" value="{{ doctor[1] }}" readonly style="border: none; background: transparent;"></td>
             </tr>
-            
             <tr>
-                <th>Street</th>
-                <td><input type="text" class="editable" name="street" value="{{ patient[1] }}" readonly></td>
+                <th>Specialty</th>
+                <td><input type="text" class="editable" name="specialty" value="{{ doctor[2] }}" readonly></td>
             </tr>
             <tr>
                 <th>Zip Code</th>
-                <td><input type="text" class="editable" name="zip_code" value="{{ patient[2] }}" readonly></td>
+                <td><input type="text" class="editable" name="zip_code" value="{{ doctor[3] }}" readonly></td>
             </tr>
             <tr>
-                <th>Age</th>
-                <td><input type="number" class="editable" name="age" value="{{ patient[3] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Gender</th>
-                <td><input type="text" class="editable" name="gender" value="{{ patient[4] }}" readonly></td>
-            </tr>
-            <tr>
-                <th>Medical Record</th>
-                <td><textarea class="editable" name="medical_record" readonly>{{ patient[5] }}</textarea></td>
-            </tr>
-            <tr>
-                <th>Family History</th>
-                <td><textarea class="editable" name="family_history" readonly>{{ patient[6] }}</textarea></td>
+                <th>Street</th>
+                <td><input type="text" class="editable" name="street" value="{{ doctor[4] }}" readonly></td>
             </tr>
         </table>
         <br>
@@ -93,6 +80,6 @@
     {% endif %}
 
     <br>
-    <a href="{{ url_for('main_page') }}">Back to Main Page</a>
+    <a href="{{ url_for('doctor_page') }}">Back to Doctor Main Page</a>
 </body>
 </html>

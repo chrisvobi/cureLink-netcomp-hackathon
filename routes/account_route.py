@@ -12,7 +12,7 @@ def init_account_route(app):
         
         patient_id = session['user_id']
         query = """
-            SELECT name, street, zip_code, age, gender, medical_record, family_history
+            SELECT name, street, zip_code, age, gender, medical_record, family_history, email
             FROM patients
             WHERE patient_id = %s
         """
