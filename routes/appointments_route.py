@@ -219,7 +219,7 @@ def find_doctors_by_criteria(specialty):
     patient_city =  patient_data['city']
     patient_lat, patient_lon = get_coordinates(patient_address)
     query = """
-    SELECT d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city,
+    SELECT d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city, d.pwd_accessible,
            GROUP_CONCAT(aslot.date_time ORDER BY aslot.date_time SEPARATOR ', ') AS available_slots
     FROM doctors d
     LEFT JOIN available_slots aslot ON d.doctor_id = aslot.doctor_id AND aslot.booked = 0
@@ -296,7 +296,8 @@ def init_appointments_route(app):
                         "street": None,
                         "city": None,
                         "distance_km": 0,
-                        "available_slots": None
+                        "available_slots": None,
+                        "pwd_accessible": None
                     }]
 
 

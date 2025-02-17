@@ -28,6 +28,7 @@
                 <th>Specialty</th>
                 <th>Address</th>
                 <th>Distance (km)</th>
+                <th>Access for Disabled People</th>
                 <th>Available Appointments</th>
             </tr>
             {% for doctor in doctors %}
@@ -36,6 +37,7 @@
                     <td>{{ doctor.specialty }}</td>
                     <td>{{ doctor.street }}, {{ doctor.city }}</td>
                     <td>{{ "%.2f"|format(doctor.distance_km) }}</td>
+                    <td>{{ "Yes" if doctor.pwd_accessible else "No" }}</td>
                     <td>
                         <button class="toggle-button" onclick="toggleAppointments(this, 'appointments-{{ loop.index }}')">To see available appointments click here</button>
                         <div id="appointments-{{ loop.index }}" style="display: none;">
