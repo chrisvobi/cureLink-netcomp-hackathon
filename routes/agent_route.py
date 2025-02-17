@@ -126,6 +126,14 @@ from flask import render_template, request, session, redirect, url_for
 from utils.db_connection import get_db_connection
 
 def init_agent_route(app):
+    @app.before_request
+    def before_request():
+        if request.method == 'GET':
+            global conversation
+            conversation = [system_message]
+            global added_history
+            added_history = False
+
     @app.route('/agent', methods=['GET', 'POST'])
     def agent_page():
         if 'user_id' not in session:
@@ -155,10 +163,10 @@ def init_agent_route(app):
             age, gender, medical_record, family_history = user_history[0]
             answer = f"I am a {gender}, {age} years old"
             answer1 = ""
-            if medical_record != "No medical record":
+            if medical_record != None:
                 answer1 = f", my medical record is {medical_record}"
             answer2 = ""
-            if family_history != "No known family history":
+            if family_history != None:
                 answer2 = f", and my family history includes {family_history}"
             history = answer + answer1 + answer2
             conversation.append({"role": "user", "content": history})
