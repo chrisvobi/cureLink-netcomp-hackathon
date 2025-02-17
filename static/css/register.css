@@ -91,9 +91,17 @@ form label {
     margin-top: 10px;
 }
 
-form input,
+form input{
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 20px;
+    background: #f1f1f1;
+}
+
 form select {
-    width: 100%;
+    width: 95%;
     padding: 10px;
     margin: 10px 0;
     border: none;
@@ -105,6 +113,10 @@ form button {
     background: #6A85D3;
     color: white;
     border: none;
+    width: 30%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     padding: 10px;
     border-radius: 20px;
     cursor: pointer;

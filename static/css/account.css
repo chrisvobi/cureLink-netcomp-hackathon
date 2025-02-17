@@ -64,7 +64,7 @@ h2 {
 
 textarea.editable {
     resize: none;
-    height: 100px;
+    height: 20px;
 }
 
 .action-button {
