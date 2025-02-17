@@ -32,5 +32,9 @@
     "doc_account_user": {
         "user": "doc_account",
         "password": "doc_account_password"
+    },
+    "doc_feedback_user": {
+        "user": "doc_feedback_user",
+        "password": "doc_feedback_user_password"
     }
 }
