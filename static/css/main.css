@@ -1,5 +1,5 @@
 body {
-    background-image: url('../images/background.png');
+    background-image: url('../images/backround.png');
     background-size: cover;
     background-position: center;
     font-family: Arial, sans-serif;
@@ -9,7 +9,7 @@ body {
 
 .container {
     padding: 50px;
-    background: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(to right, #B0C4FF, #6A85D3);
     border-radius: 10px;
     width: 50%;
     margin: 100px auto;
@@ -18,6 +18,7 @@ body {
 .logo {
     width: 150px;
     margin-bottom: 20px;
+    border-radius: 25px;
 }
 
 .success-message {
@@ -40,10 +41,10 @@ body {
 }
 
 .action-button {
-    background-color: white;
-    color: black;
-    border: 2px solid black;
-    border-radius: 5px;
+    background-color: #5A78E8;
+    color: white;
+    border: 2px solid white;
+    border-radius: 15px;
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
