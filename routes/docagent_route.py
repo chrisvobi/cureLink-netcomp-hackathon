@@ -201,6 +201,7 @@ def create_appointments(conversation, user_message):
     "end_day": end_day,
     "end_time": end_time,
     }
+    print(args)
     fun = output.function_call.name
     call = call_function(fun, args)
     return call
@@ -235,6 +236,9 @@ system_message = {
         "if user says something irrelevant remind them your purpose"
         "if user gives a day (eg Monday) of the week call function insert_slots"
         "if user gives a date (%y-%m-%d) call function insert_slots2"
+        "never assume end_day and end_time if they are not provided"
+        "if a day is given one time end day is None"
+        "if a time is given one time end time is None"
     ),
 }
 
