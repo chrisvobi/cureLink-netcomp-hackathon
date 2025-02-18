@@ -82,9 +82,12 @@ def update_appointment(doctor_id, appointments, patient_name, diagnosis, medicat
             
             # update appointment
             query = """UPDATE appointments SET diagnosis = %s, medicine = %s, status = "completed"
-            WHERE patient_id = %s AND slot_id = %s AND doctor_id = %s"""
+            WHERE patient_id = %s AND slot_id = %s AND doctor_id = %s;"""
 
             cursor.execute(query, (diagnosis, medication, patient_id, appointment["slot_id"], doctor_id))
+
+            query = """UPDATE patients SET medical_record = %s WHERE patient_id = %s;"""
+            cursor.execute(query, (diagnosis, patient_id))
 
             db.commit()
             
