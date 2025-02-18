@@ -51,7 +51,17 @@
                     <option value="patient">Patient</option>
                     <option value="doctor">Doctor</option>
                 </select>
-
+                
+                <div id="patient_fields" style="display: block;">
+                    <label>Age:</label>
+                    <input type="number" name="age" id="age" min="1" max="150" required>
+                
+                    <label>Gender:</label>
+                    <select name="gender" id="gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
                 <!-- Specialty dropdown -->
                 <div id="specialty_field" style="display: none;">
                     <label>Specialty:</label>
@@ -104,6 +114,7 @@
     function toggleSpecialtyField() {
         var userType = document.getElementById("user_type").value;
         var specialtyField = document.getElementById("specialty_field");
+        var patientFields = document.getElementById("patient_fields");
 
         if (userType === "doctor") {
             specialtyField.style.display = "block";
@@ -111,6 +122,16 @@
         } else {
             specialtyField.style.display = "none";
             document.getElementById("specialty").removeAttribute("required");
+        }
+
+        if (userType === "patient") {
+            patientFields.style.display = "block";
+            document.getElementById("age").setAttribute("required", "true");
+            document.getElementById("gender").setAttribute("required", "true");
+        } else {
+            patientFields.style.display = "none";
+            document.getElementById("age").removeAttribute("required");
+            document.getElementById("gender").removeAttribute("required");
         }
     }
     </script>
