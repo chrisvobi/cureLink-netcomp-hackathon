@@ -264,6 +264,14 @@ checked_doctors = False
 found_doctors=[]
 chat = [system_message]
 def init_appointments_route(app):
+    @app.before_request
+    def before_request():
+        if request.method == 'GET' and request.endpoint == 'appointments_page' and not request.args:
+            global conversation, chat, semianswer
+            conversation = [system_message]
+            chat = conversation
+            semianswer = ""
+    
     @app.route('/appointments', methods=['GET', 'POST'])
     def appointments_page():
         if 'user_id' not in session:
