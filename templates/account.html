@@ -6,21 +6,32 @@
     <script>
         function toggleEdit() {
             let inputs = document.querySelectorAll(".editable");
+            let selects = document.querySelectorAll("select.editable");
             let isEditing = document.getElementById("editBtn").innerText === "Edit";
 
             inputs.forEach(input => {
-                input.readOnly = !isEditing;
-                input.style.border = isEditing ? "1px solid #ccc" : "none";
-                input.style.background = isEditing ? "white" : "transparent";
+                if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
+                    input.readOnly = !isEditing;
+                    input.style.border = isEditing ? "1px solid #ccc" : "none";
+                    input.style.background = isEditing ? "white" : "transparent";
+                }
+            });
+
+            // Enable dropdowns when editing
+            selects.forEach(select => {
+                select.disabled = !isEditing;
             });
 
             document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
             document.getElementById("cancelBtn").style.display = isEditing ? "inline-block" : "none";
 
             if (!isEditing) {
+                // Ensure all dropdowns are enabled before submitting
+                selects.forEach(select => select.removeAttribute('disabled'));
                 saveChanges();
             }
         }
+
 
         function cancelEdit() {
             location.reload(); 
@@ -71,12 +82,23 @@
                 </tr>
                 <tr>
                     <th>Age</th>
-                    <td><input type="number" class="editable" name="age" value="{{ patient[3] }}" readonly></td>
+                    <td>
+                        <select class="editable" name="age" disabled>
+                            {% for i in range(18, 101) %}
+                                <option value="{{ i }}" {% if patient[3] == i %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                 </tr>
                 <tr>
                     <th>Gender</th>
-                    <td><input type="text" class="editable" name="gender" value="{{ patient[4] }}" readonly></td>
-                </tr>
+                    <td>
+                        <select class="editable" name="gender" disabled>
+                            <option value="Male" {% if patient[4] == "Male" %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if patient[4] == "Female" %}selected{% endif %}>Female</option>
+                        </select>
+                    </td>
+                </tr>                   
                 <tr>
                     <th>Medical Record</th>
                     <td><textarea class="editable" name="medical_record" readonly>{{ patient[5] }}</textarea></td>

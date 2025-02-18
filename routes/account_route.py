@@ -42,6 +42,7 @@ def init_account_route(app):
 
         # Get updated data from the web page
         name = request.form.get('name')
+        email = request.form.get('email')
         street = request.form.get('street')
         zip_code = request.form.get('zip_code')
         age = request.form.get('age')
@@ -84,10 +85,10 @@ def init_account_route(app):
         # Query to update patients account information
         update_query = """
             UPDATE patients
-            SET name = %s, street = %s, zip_code = %s, age = %s, gender = %s, medical_record = %s, family_history = %s
+            SET name = %s, email = %s, street = %s, zip_code = %s, age = %s, gender = %s, medical_record = %s, family_history = %s
             WHERE patient_id = %s
         """
-        cur.execute(update_query, (name, street, zip_code, age, gender, medical_record, family_history, session['user_id']))
+        cur.execute(update_query, (name, email, street, zip_code, age, gender, medical_record, family_history, session['user_id']))
         conn.commit()
         cur.close()
         conn.close()
