@@ -108,3 +108,11 @@ h2 {
 .toggle-button:hover {
     background-color: #4E6DC2;
 }
+#user_message {
+    width: 80%;
+    height: 70px;
+    resize: none;
+    border: 2px solid black;
+    border-radius: 5px;
+    box-shadow: none;
+}
