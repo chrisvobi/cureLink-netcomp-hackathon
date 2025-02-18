@@ -200,15 +200,15 @@ def init_agent_route(app):
             conn.close()
 
             age, gender, medical_record, family_history = user_history[0]
-            answer = f"I am a {gender}, {age} years old"
+            answer = f"I can see that you are a {gender}, {age} years of age."
             answer1 = ""
             if medical_record != None:
-                answer1 = f", my medical record is {medical_record}"
+                answer1 = f" Your medical record consists of: {medical_record}."
             answer2 = ""
             if family_history != None:
-                answer2 = f", and my family history includes {family_history}"
-            history = answer + answer1 + answer2
-            conversation.append({"role": "user", "content": history})
+                answer2 = f" Your family history includes: {family_history}."
+            history = answer + answer1 + answer2 + " What are your symptoms?"
+            conversation.append({"role": "assistant", "content": history})
             added_history = True
 
 
