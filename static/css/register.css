@@ -23,7 +23,7 @@ body {
 .container {
     display: flex;
     width: 900px;
-    height: 900px;
+    height: 1100px;
     background: white;
     border-radius: 10px;
     overflow: hidden;
