@@ -129,6 +129,7 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
     )
     return completion.choices[0].message.parsed
 
+
 def check_disabled_access(user_message) -> DisabledAccess:
     """
     Determines whether the user has a disability and needs pwd access
@@ -286,7 +287,7 @@ def init_agent_route(app):
                     return render_template('agent.html', conversation=conversation)
             
             # If after some questions there is no clear specialty needed, check if symptoms are not sever
-            if len(conversation) > 12:
+            if len(conversation) > 8:
                 not_severe_symptoms = extract_symptoms_not_severe(conversation)
                 if not_severe_symptoms.confidence_score > 0.9:
                     treatment = not_severe_symptoms.at_home_treatment

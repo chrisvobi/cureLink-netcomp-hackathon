@@ -4,6 +4,39 @@ from openai import OpenAI
 from datetime import datetime, timedelta
 from utils.db_connection import get_db_connection
 
+def insert_slots_multiple_days(doctor_id: int, start_day: list[str], start_time: str, interval=60,end_day=None, end_time=None):
+    """Handles inserting slots for multiple days, supporting both weekdays and specific dates."""
+    results = []  # To store the results if needed
+    for day in start_day:
+        result = insert_slots(doctor_id, day, start_time, interval, end_day, end_time)  # Call insert_slots for each day
+        results.append(result)  # Collect each result 
+    total_slots = 0
+    for res in results:
+        if "Successfully added" in res:
+            total_slots += int(res.split()[2])
+    if total_slots > 0:
+        return f"Successfully added {total_slots} slots."
+    else:
+        return "No slots were added as you already have slots for these dates"
+
+def insert_slots_multiple_days_second(doctor_id: int, start_day: list[str], start_time: str, interval=60,end_day=None, end_time=None):
+    """Handles inserting slots for multiple days, supporting both weekdays and specific dates."""
+
+    results = []  # To store the results if needed
+    for day in start_day:
+        print(doctor_id, day, start_time, interval, end_day, end_time)  
+        result = insert_slots2(doctor_id, day, start_time, interval, end_day, end_time)  # Call insert_slots for each day
+        results.append(result)  # Collect each result
+        
+    total_slots = 0
+    for res in results:
+        if "Successfully added" in res:
+            total_slots += int(res.split()[2])
+    if total_slots > 0:
+        return f"Successfully added {total_slots} slots."
+    else:
+        return "No slots were added as you already have slots for these dates"
+
 def get_dates_in_range(start_day: str, end_day: str) -> list[str]:
     """Returns the dates between a start and end day"""
     
@@ -124,22 +157,32 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
     db = get_db_connection("docagent_user")
     cursor = db.cursor(dictionary=True)
     end_day = end_day if end_day is not None else start_day
-    dates =[]
+    dates = []
+    
+    # Convert days to datetime objects
     start_day = datetime.strptime(start_day, "%Y-%m-%d")
     end_day = datetime.strptime(end_day, "%Y-%m-%d")
+    
+    # Generate the list of dates between start and end day
     while start_day <= end_day:
         dates.append(start_day.strftime("%Y-%m-%d"))
         start_day += timedelta(days=1)
+        
     timedates = []
+    
+    # If end_time is None, only append the start time
     if end_time is None:
         start_time = datetime.strptime(start_time, "%H:%M:%S")
         for date in dates:
             timedates.append(f"{date} {start_time.strftime('%H:%M:%S')}")
     else:
+        # Otherwise, generate times between start_time and end_time at the specified interval
         times = generate_times_in_range(start_time, end_time, interval)
         for date in dates:
             for time in times:
                 timedates.append(f"{date} {time}")
+    
+    # Query to get the max slot_id in the available_slots table for this doctor
     query = """
     SELECT max(slot_id) as maxslot FROM available_slots
     WHERE doctor_id = %s
@@ -149,6 +192,7 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
     maxslot = row['maxslot'] if row['maxslot'] is not None else 0
     maxslot += 1
 
+    # Query to get all existing date_times from the available_slots table
     query = """
     SELECT date_time FROM available_slots
     WHERE doctor_id = %s
@@ -157,18 +201,17 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
     date_times = cursor.fetchall()
     date_times = [str(date_times[i]['date_time']) for i in range(len(date_times))]
 
+
     # only keep the dates that are in the future and not already in the database
     today = datetime.today()
     correct_dates = []
-    correct_dates = [date for date in timedates if date not in date_times]
 
     for date in timedates:
         if date not in date_times:
             if datetime.strptime(date, '%Y-%m-%d %H:%M:%S') > today:
                 correct_dates.append(date)
+
     
-
-
     for date in correct_dates:
         query = """
         INSERT INTO available_slots (slot_id, doctor_id, date_time, booked)
@@ -179,6 +222,7 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
 
     db.commit()
 
+    # Return a message depending on how many slots were added
     if len(correct_dates) > 0:
         return f"Successfully added {len(correct_dates)} slots."
     else:
@@ -220,6 +264,10 @@ def call_function(name, args):
         return insert_slots(**args)
     elif name == "insert_slots2":
         return insert_slots2(**args)
+    elif name == "insert_slots_multiple_days":
+        return insert_slots_multiple_days(**args)
+    elif name == "insert_slots_multiple_days_second":
+        return insert_slots_multiple_days_second(**args)
 
 
 with open('config.json') as config_file:
@@ -248,6 +296,9 @@ system_message = {
         "never assume end_day and end_time if they are not provided"
         "if a day is given one time end day is None"
         "if a time is given one time end time is None"
+        "if user gives multiple days (eg Monday , Wednesday and Friday) set start day as list of these days and set end day as None"
+        "if user gives multiple days (eg Monday , Wednesday and Friday) call function insert_slots_multiple_days"
+        "if user gives multiple dates (eg 2025/02/19 , 2025/02/21 and 2025/02/23) call function insert_slots_multiple_days_second"
     ),
 }
 
@@ -314,6 +365,66 @@ function_descriptions = [
             },
             "required": ["start_day", "start_time"],
         },
+    },
+     {
+        "name": "insert_slots_multiple_days",
+        "description": "Insert available slots for appointments for multiple days into the database",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "start_day": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "A list of days as strings. Each can be a weekday (e.g., 'Monday')."
+                    },
+                    "description": "A list of days for which to insert available slots."
+                },
+                "start_time": {
+                    "type": "string",
+                    "description": "The start time of the available slots, in the format HH:MM:SS (e.g., '09:00:00')."
+                },
+                "interval": {
+                    "type": "integer",
+                    "description": "The interval in minutes between each slot, e.g., 60. Default is 60."
+                },
+                "end_time": {
+                    "type": "string",
+                    "description": "The end time for the slots in the format HH:MM:SS (e.g., '17:00:00'). Optional."
+                }
+            },
+            "required": [ "start_day", "start_time"]
+        }
+    },
+    {
+        "name": "insert_slots_multiple_days_second",
+        "description": "Insert available slots for appointments for multiple days into the database",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "start_day": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "A list of days as strings. Each can be a date (YYYY-MM-DD)."
+                    },
+                    "description": "A list of days for which to insert available slots."
+                },
+                "start_time": {
+                    "type": "string",
+                    "description": "The start time of the available slots, in the format HH:MM:SS (e.g., '09:00:00')."
+                },
+                "interval": {
+                    "type": "integer",
+                    "description": "The interval in minutes between each slot, e.g., 60. Default is 60."
+                },
+                "end_time": {
+                    "type": "string",
+                    "description": "The end time for the slots in the format HH:MM:SS (e.g., '17:00:00'). Optional."
+                }
+            },
+            "required": [ "start_day", "start_time"]
+        }
     }
 ]
 
@@ -327,7 +438,6 @@ def init_docagent_route(app):
             return redirect(url_for('login'))  # Redirect patients away
         
         global conversation # current conversation
-        print(conversation)
 
         if request.method == 'POST':
             conversation = eval(request.form['conversation'])  # Convert string back to list
