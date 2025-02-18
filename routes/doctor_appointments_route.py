@@ -53,11 +53,11 @@ conversation = [system_message]
 
 def get_appointments(doctor_id):
     query = """
-        SELECT DISTINCT patients.name, available_slots.date_time, appointments.status, appointments.diagnosis, appointments.medicine, appointments.slot_id
+        SELECT patients.name, available_slots.date_time, appointments.status, appointments.diagnosis, appointments.medicine, appointments.slot_id
         FROM appointments
         JOIN patients ON appointments.patient_id = patients.patient_id
-        JOIN available_slots ON appointments.slot_id = available_slots.slot_id
-        WHERE appointments.doctor_id = %s AND appointments.status NOT IN ("canceled")
+        JOIN available_slots ON appointments.slot_id = available_slots.slot_id AND appointments.doctor_id = available_slots.doctor_id
+        WHERE appointments.doctor_id = %s
         ORDER BY available_slots.date_time DESC;
     """
 

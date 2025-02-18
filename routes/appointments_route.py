@@ -108,6 +108,7 @@ system_message = {
         "Never ask for user confirmation"
         "doctor's names are in greeklish"
         "dont tell the user what you are doing just do it"
+        "ignore pronoun dr. mr. mrs. ms. and so on"
     ),
 }
 
