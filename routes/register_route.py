@@ -103,7 +103,7 @@ def init_register_route(app):
                     # Save user in the doctors table
                     doctor_id = get_first_available_id(cursor, "doctors", "doctor_id")
                     cursor.execute(
-                        "INSERT INTO doctors (doctor_id, name, email, password, zip_code, street, specialty) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                        "INSERT INTO doctors (doctor_id, name, email, password, zip_code, street, specialty, pwd_accessible) VALUES (%s, %s, %s, %s, %s, %s, %s, 0)",
                         (doctor_id, name, email, hashed_password, zip_code, street, specialty)
                     )
                 db.commit()
