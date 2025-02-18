@@ -2,5 +2,3 @@ config.json
 venv
 routes/__pycache__
 utils/__pycache__
-database_filling_appointments_available.py
-database_filling.py
