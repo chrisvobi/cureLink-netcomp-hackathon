@@ -53,7 +53,7 @@ docker compose up
 
 If you followed the above steps you should be able to now use the application. Mocked doctor and patients accounts will be provided to you.
 
-## Feature Expansions
+## Future Expansions
 - Intergrate **OpenAI Whisper** so both patients and doctors can talk *(instead of typing to the user)*.
 
 ## Extra Documentation
