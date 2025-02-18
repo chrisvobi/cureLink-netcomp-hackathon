@@ -55,6 +55,8 @@ If you followed the above steps you should be able to now use the application. M
 
 ## Future Expansions
 - Intergrate **OpenAI Whisper** so both patients and doctors can talk *(instead of typing to the user)*.
+- Make the Agent smarter and able to recognize name typos. *Currently the agent is able to catch parts of the name (if user forgets some letters or just gives first/last name) but can't recognize harder typos*.
+- Expand the symptoms analysis agent to be able to suggest medical tests to the patient.
 
 ## Extra Documentation
 For extra documentation on how the app works you can check our small presentation [here](CURELINK.pdf).
