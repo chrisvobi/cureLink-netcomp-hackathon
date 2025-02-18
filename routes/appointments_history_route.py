@@ -38,7 +38,8 @@ def init_appointments_history_route(app):
         # Εκτέλεση query για scheduled
         cur.execute(query_scheduled, (patient_id,))
         scheduled_appointments = cur.fetchall()
-
+        scheduled_appointments = scheduled_appointments[::-1]
+        
         # Εκτέλεση query για completed
         cur.execute(query_completed, (patient_id,))
         completed_appointments = cur.fetchall()

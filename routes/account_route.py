@@ -1,5 +1,8 @@
 from flask import render_template, request, jsonify, session, redirect, url_for
 from utils.db_connection import get_db_connection
+from utils.valid_zipcode import is_valid_zip
+import requests
+import json
 
 def init_account_route(app):
     @app.route('/account')
@@ -40,14 +43,35 @@ def init_account_route(app):
         medical_record = request.form.get('medical_record')
         family_history = request.form.get('family_history')
 
-        update_query = """
-            UPDATE patients
-            SET name = %s, street = %s, zip_code = %s, age = %s, gender = %s, medical_record = %s, family_history = %s
-            WHERE patient_id = %s
-        """
-
+        a = is_valid_zip(zip_code)
+        if not a:
+            return jsonify({'success': False})
+        
         conn = get_db_connection("account_user")
         cur = conn.cursor()
+
+        query = "SELECT COUNT(*) FROM address WHERE zip_code = %s"
+        cur.execute(query, (zip_code,))
+        
+        # Fetch result
+        result = cur.fetchone()[0]
+        if result == 0:
+            with open('config.json') as config_file:
+                config = json.load(config_file)
+                GOOGLE_API_KEY = config['GOOGLE_API_KEY']
+            url = f"https://maps.googleapis.com/maps/api/geocode/json?address={zip_code}&components=country:GR&key={GOOGLE_API_KEY}"
+            response = requests.get(url)
+            data = response.json()
+            city = data["results"][0]["address_components"][2]["long_name"]
+            insert_query = "INSERT INTO address (zip_code, city) VALUES (%s, %s)"
+            cur.execute(insert_query, (zip_code, city))
+            conn.commit()
+
+        update_query = """
+                UPDATE patients
+                SET name = %s, street = %s, zip_code = %s, age = %s, gender = %s, medical_record = %s, family_history = %s
+                WHERE patient_id = %s
+            """
         cur.execute(update_query, (name, street, zip_code, age, gender, medical_record, family_history, patient_id))
         conn.commit()
         cur.close()

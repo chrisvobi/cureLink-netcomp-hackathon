@@ -1,5 +1,8 @@
 from flask import render_template, request, jsonify, session, redirect, url_for
 from utils.db_connection import get_db_connection
+from utils.valid_zipcode import is_valid_zip
+import json
+import requests
 
 def init_doctor_account_route(app):
     @app.route('/doctor_account')
@@ -42,7 +45,29 @@ def init_doctor_account_route(app):
         street = request.form.get('street')
         pwd_accessible = request.form.get('pwd_accessible')
 
-        print(f"pwd_accessible from form: {pwd_accessible}")  # Debugging statement
+        a = is_valid_zip(zip_code)
+        if not a:
+            return jsonify({'success': False})
+        
+        conn = get_db_connection("doc_account_user")
+        cur = conn.cursor()
+
+        query = "SELECT COUNT(*) FROM address WHERE zip_code = %s"
+        cur.execute(query, (zip_code,))
+        print(zip_code)
+        # Fetch result
+        result = cur.fetchone()[0]
+        if result == 0:
+            with open('config.json') as config_file:
+                config = json.load(config_file)
+                GOOGLE_API_KEY = config['GOOGLE_API_KEY']
+            url = f"https://maps.googleapis.com/maps/api/geocode/json?address={zip_code}&components=country:GR&key={GOOGLE_API_KEY}"
+            response = requests.get(url)
+            data = response.json()
+            city = data["results"][0]["address_components"][2]["long_name"]
+            insert_query = "INSERT INTO address (zip_code, city) VALUES (%s, %s)"
+            cur.execute(insert_query, (zip_code, city))
+            conn.commit()
 
         # Convert "yes"/"no" to 1/0 for the database
         pwd_accessible = 1 if pwd_accessible == "yes" else 0
