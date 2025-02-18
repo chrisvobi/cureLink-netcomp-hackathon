@@ -1,6 +1,8 @@
 from openai import OpenAI
 from pydantic import BaseModel, Field
 import json
+from difflib import get_close_matches
+from utils.db_connection import get_db_connection
 
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -121,11 +123,34 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
     )
     return completion.choices[0].message.parsed
 
+# get the closest specialty from the database
+def get_closest_specialty(specialty):
+    # fetch all specialties from the database
+    db = get_db_connection("login_user")
+    cursor = db.cursor()
+    query = """SELECT DISTINCT(specialty) FROM doctors"""
+    cursor.execute(query)
+    specialties = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    db.close()
+
+    matches = get_close_matches(specialty, specialties, n=1, cutoff=0.7)
+
+    return matches[0] if matches else None
+
 
 from flask import render_template, request, session, redirect, url_for
 from utils.db_connection import get_db_connection
 
 def init_agent_route(app):
+    @app.before_request
+    def before_request():
+        if request.method == 'GET':
+            global conversation
+            conversation = [system_message]
+            global added_history
+            added_history = False
+
     @app.route('/agent', methods=['GET', 'POST'])
     def agent_page():
         if 'user_id' not in session:
@@ -155,10 +180,10 @@ def init_agent_route(app):
             age, gender, medical_record, family_history = user_history[0]
             answer = f"I am a {gender}, {age} years old"
             answer1 = ""
-            if medical_record != "No medical record":
+            if medical_record != None:
                 answer1 = f", my medical record is {medical_record}"
             answer2 = ""
-            if family_history != "No known family history":
+            if family_history != None:
                 answer2 = f", and my family history includes {family_history}"
             history = answer + answer1 + answer2
             conversation.append({"role": "user", "content": history})
@@ -172,7 +197,7 @@ def init_agent_route(app):
 
              # Validate user input
             if not validate_input(user_message,conversation):
-                answer = "Assistant: Your response does not seem to be related to medical symptoms. Please provide relevant information."
+                answer = "Your response does not seem to be related to medical symptoms. Please provide relevant information."
                 conversation.append({"role": "assistant", "content": answer})
                 return render_template('agent.html', conversation=conversation)
             
@@ -189,21 +214,34 @@ def init_agent_route(app):
             # Check if user requested a specific doctor
             request_doctor = check_request_for_doctor(conversation)
             if request_doctor.confidence_score > 0.95 and request_doctor.specialty != None:
-                conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is an {request_doctor.specialty}."})
-                session['specialty'] = request_doctor.specialty
-                session['conversation'] = conversation
-                return render_template('agent.html', conversation=conversation, button=True)
+                # check for the specialty in the database
+                request_doctor.specialty = get_closest_specialty(request_doctor.specialty)
+                if request_doctor.specialty is not None:
+                    conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}."})
+                    session['specialty'] = request_doctor.specialty
+                    session['conversation'] = conversation
+                    return render_template('agent.html', conversation=conversation, button=True)
+                else:
+                    conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
+                    return render_template('agent.html', conversation=conversation)
 
             # Check if the agent can extract confidently a specialty
             doctor_extraction = extract_doctor(conversation)
             if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
-                conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
-                session['specialty'] = doctor_extraction.specialty
-                session['conversation'] = conversation
-                return render_template('agent.html', conversation=conversation, button=True)
+                # find the closest specialty in the database
+                doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty)
+                if doctor_extraction.specialty is not None:
+                    conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
+                    session['specialty'] = doctor_extraction.specialty
+                    session['conversation'] = conversation
+                    return render_template('agent.html', conversation=conversation, button=True)
+                # if specialty not in database (not correct specialty)
+                else:
+                    conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
+                    return render_template('agent.html', conversation=conversation)
             
             # If after some questions there is no clear specialty needed, check if symptoms are not sever
-            if len(conversation) > 12:
+            if len(conversation) > 8:
                 not_severe_symptoms = extract_symptoms_not_severe(conversation)
                 if not_severe_symptoms.confidence_score > 0.9:
                     treatment = not_severe_symptoms.at_home_treatment
