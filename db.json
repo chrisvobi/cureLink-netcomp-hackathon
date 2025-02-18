@@ -1,5 +1,5 @@
 {
-    "host": "localhost",
+    "host": "db",
     "database": "med_db",
     "login_user": {
         "user": "login_user",

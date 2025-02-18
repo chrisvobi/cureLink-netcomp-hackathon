@@ -1,0 +1,6 @@
+venv
+routes/__pycache__
+utils/__pycache__
+.gitignore
+config.sample.json
+README.md

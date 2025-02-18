@@ -1,6 +1,7 @@
 from flask import Flask, session
 from routes import init_routes
 import json
+import redis
 
 # Load the secret key from config.json
 with open('config.json') as config_file:
@@ -11,6 +12,7 @@ with open('config.json') as config_file:
 app = Flask(__name__)
 app.template_folder = "templates"
 app.secret_key = secret_key  
+cache = redis.Redis(host='redis', port=6379)
 
 # Register application routes
 init_routes(app)
