@@ -94,7 +94,7 @@ def update_appointment(doctor_id, appointments, patient_name, diagnosis, medicat
             cursor.close()
             db.close()
 
-            return f"Appointment for {appointment["name"]} updated successfully"
+            return f"Appointment for {appointment['name']} updated successfully"
         else:
             return f"Patient {patient_name} not found"
 
