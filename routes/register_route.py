@@ -64,7 +64,7 @@ def init_register_route(app):
                 return render_template('register.html')
 
             # Check if all fields are filled
-            if not name or not email or not password or not zip_code or not street or not city or not age:
+            if not name or not email or not password or not zip_code or not street or not city:
                 flash("All fields are required!", "danger")
                 return render_template('register.html')
 
