@@ -51,11 +51,15 @@ class RequestDoctor(BaseModel):
     specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist') that the user requested")
     confidence_score: float = Field(description="Confidence score (0-1) that the user requested a specific doctor")
 
+class DisabledAccess(BaseModel):
+    is_disabled: bool = Field(description="True if the user has a disability and needs pwd (people with disabilities) access, False otherwise")
 
 relevance_check ={
     "role": "system",
     "content": ("You are a medical assisant that classifies whether a given input is medically relevant."
-    "User input must contain health related or medical terms.")
+    "User input should contain health related or medical terms."
+    "if the user input is yes or no it probably is related to questions about symptoms or conditions."
+    "keep in mind that the user might not be aware of the medical terms, so try to understand the context of the message.")
 }
 # Function to check if user input is relevant
 def validate_input(user_message,conversation) -> bool:
@@ -65,7 +69,9 @@ def validate_input(user_message,conversation) -> bool:
     """
     validation_prompt = [
         relevance_check,
-        {"role": "user", "content": f"User input: {user_message}\nIs this medically relevant? Respond with 'true' or 'false' only."}
+        {"role": "user", "content": (f"User input: {user_message}\nIs this medically relevant? Respond with 'true' or 'false' only."
+                                     "if the answer is yes or no, consider it as relevant"
+                                     "keep in mind the user might be answering questions")}
     ]
     
     completion = client.beta.chat.completions.parse(
@@ -120,6 +126,22 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
         model=model,
         messages=conversation,
         response_format=RequestDoctor,
+    )
+    return completion.choices[0].message.parsed
+
+
+def check_disabled_access(user_message) -> DisabledAccess:
+    """
+    Determines whether the user has a disability and needs pwd access
+    """
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages= [{"role": "system", "content": ("The user will tell if they need pwd access"
+                                                  "they will probably answer with 'yes' or 'no'"
+                                                  "does the user need pwd access?"
+                                                  "does the user need easy access because of a disability?")}] + 
+                                                  [{"role": "user", "content": user_message}],
+        response_format=DisabledAccess,
     )
     return completion.choices[0].message.parsed
 
@@ -217,10 +239,22 @@ def init_agent_route(app):
                 # check for the specialty in the database
                 request_doctor.specialty = get_closest_specialty(request_doctor.specialty)
                 if request_doctor.specialty is not None:
+                    # Check if the user needs pwd access
+                    if 'waiting_for_pwd' in session and session['waiting_for_pwd']:
+                        need_pwd = check_disabled_access(user_message)
+                        if need_pwd.is_disabled:
+                            conversation.append({"role": "assistant", "content": "I have noted that you need PWD (people with disabilities) access. Let's move on with booking"})
+                        else:
+                            conversation.append({"role": "assistant", "content": "Great! Let's move on with booking"})
+                        session['need_pwd'] = need_pwd.is_disabled
+                        session['waiting_for_pwd'] = False # Reset flag
+                        return render_template('agent.html', conversation=conversation, button = True)
                     conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}."})
+                    conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
+                    session['waiting_for_pwd'] = True # initialize flag
                     session['specialty'] = request_doctor.specialty
                     session['conversation'] = conversation
-                    return render_template('agent.html', conversation=conversation, button=True)
+                    return render_template('agent.html', conversation=conversation)
                 else:
                     conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
                     return render_template('agent.html', conversation=conversation)
@@ -231,7 +265,19 @@ def init_agent_route(app):
                 # find the closest specialty in the database
                 doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty)
                 if doctor_extraction.specialty is not None:
+                     # Check if the user needs pwd access
+                    if 'waiting_for_pwd' in session and session['waiting_for_pwd']:
+                        need_pwd = check_disabled_access(user_message)
+                        if need_pwd.is_disabled:
+                            conversation.append({"role": "assistant", "content": "I have noted that you need PWD (people with disabilities) access. Let's move on with booking"})
+                        else:
+                            conversation.append({"role": "assistant", "content": "Great! Let's move on with booking"})
+                        session['need_pwd'] = need_pwd.is_disabled
+                        session['waiting_for_pwd'] = False # Reset flag
+                        return render_template('agent.html', conversation=conversation, button=True)
                     conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
+                    conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
+                    session['waiting_for_pwd'] = True # initialize flag
                     session['specialty'] = doctor_extraction.specialty
                     session['conversation'] = conversation
                     return render_template('agent.html', conversation=conversation, button=True)

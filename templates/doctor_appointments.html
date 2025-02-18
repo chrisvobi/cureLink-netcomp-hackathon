@@ -9,31 +9,86 @@
         <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
         <h2>Your Past Appointments</h2>
 
-        {% if appointments %}
-        <table class="appointments-table">
-            <tr>
-                <th>Patient Name</th>
-                <th>Appointment Date & Time</th>
-                <th>Status</th>
-                <th>Diagnosis</th>
-                <th>Medicine</th>
-            </tr>
-            {% for appointment in appointments %}
-            <tr>
-                <td>{{ appointment[0] }}</td>
-                <td>{{ appointment[1] }}</td>
-                <td>{{ appointment[2] }}</td>
-                <td>{{ appointment[3] }}</td>
-                <td>{{ appointment[4] }}</td>
-            </tr>
+        <div class="tables-container">
+            <div class="table-left">
+                <h3>Appointments with Diagnosis</h3>
+                <table class="appointments-table">
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Appointment Date & Time</th>
+                        <th>Status</th>
+                        <th>Diagnosis</th>
+                        <th>Medicine</th>
+                    </tr>
+                    {% for appointment in appointments_with_diagnosis %}
+                    <tr>
+                        <td>{{ appointment["name"] }}</td>
+                        <td>{{ appointment["date_time"] }}</td>
+                        <td>{{ appointment["status"] }}</td>
+                        <td>{{ appointment["diagnosis"] }}</td>
+                        <td>{{ appointment["medicine"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <div class="table-right">
+                <h3>Appointments without Diagnosis</h3>
+                <table class="appointments-table">
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Appointment Date & Time</th>
+                        <th>Status</th>
+                        <th>Diagnosis</th>
+                        <th>Medicine</th>
+                    </tr>
+                    {% for appointment in appointments_without_diagnosis %}
+                    <tr>
+                        <td>{{ appointment["name"] }}</td>
+                        <td>{{ appointment["date_time"] }}</td>
+                        <td>{{ appointment["status"] }}</td>
+                        <td>{{ appointment["diagnosis"] }}</td>
+                        <td>{{ appointment["medicine"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <br>
+        <div class="conversation-box">
+            {% for message in chat %}
+                <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
             {% endfor %}
-        </table>
-        {% else %}
-        <p class="no-appointments">No appointments found.</p>
-        {% endif %}
+        </div>
+        <br>
+        
+        <!-- Feedback Section -->
+        <button class="feedback-btn" onclick="toggleFeedback()">Give Feedback</button>
+
+        <!-- Feedback Form (Initially Hidden) -->
+        <div id="feedback-container" class="hidden">
+            <form method="POST">
+                <textarea id="feedback-text" class="feedback-textbox" name="feedback" placeholder="Write your feedback here..."></textarea>
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
 
         <br>
         <a class="action-button" href="{{ url_for('doctor_page') }}">Back to Doctor Page</a>
+
+        <!-- {% if success %}
+            <p class="success-message">Feedback submitted successfully!</p>
+        {% elif error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %} -->
     </div>
+
+    <script>
+        function toggleFeedback() {
+            var feedbackDiv = document.getElementById("feedback-container");
+            feedbackDiv.classList.toggle("hidden");
+        }
+    </script>
 </body>
 </html>

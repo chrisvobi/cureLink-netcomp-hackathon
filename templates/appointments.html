@@ -21,7 +21,6 @@
         <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
         <h2>Available Appointments</h2>
         <p><strong>{{ found_doctors[0]['role'] }}:</strong> {{ found_doctors[0]['content'] }}</p>
-        
 
         <table class="appointments-table">
             <tr>
@@ -29,6 +28,7 @@
                 <th>Specialty</th>
                 <th>Address</th>
                 <th>Distance (km)</th>
+                <th>Access for Disabled People</th>
                 <th>Available Appointments</th>
             </tr>
             {% for doctor in doctors %}
@@ -37,6 +37,7 @@
                     <td>{{ doctor.specialty }}</td>
                     <td>{{ doctor.street }}, {{ doctor.city }}</td>
                     <td>{{ "%.2f"|format(doctor.distance_km) }}</td>
+                    <td>{{ "Yes" if doctor.pwd_accessible else "No" }}</td>
                     <td>
                         <button class="toggle-button" onclick="toggleAppointments(this, 'appointments-{{ loop.index }}')">To see available appointments click here</button>
                         <div id="appointments-{{ loop.index }}" style="display: none;">
@@ -48,7 +49,17 @@
         </table>
         <br>
     </div>
-  
+    <br>
+
+    <div class="conversation-box">
+        {% for message in conversation %}
+            {% if loop.index > 1 %}  {# Skip the first message #}
+                <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    
     <br>
     <form action="{{ url_for('appointments_page') }}" method="post">
         <label for="user_message">Your Message:</label><br>
