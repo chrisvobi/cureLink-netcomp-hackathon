@@ -425,8 +425,15 @@ function_descriptions = [
         }
     }
 ]
-
+chat = [system_message]
 def init_docagent_route(app):
+    @app.before_request
+    def before_request():
+        if request.method == 'GET' and request.endpoint == 'docagent_page' and not request.args:
+            global conversation, chat
+            conversation = [system_message]
+            chat = conversation
+    
     @app.route('/docagent', methods=['GET', 'POST'])
     def docagent_page():
         if 'user_id' not in session:
@@ -442,7 +449,12 @@ def init_docagent_route(app):
             user_message = request.form['user_message']
 
             response = create_appointments(conversation, user_message)
-            conversation.append({"role": "user", "content": user_message})
-            conversation.append({"role": "assistant", "content": response})
+            if "No slots were added" or "Successfully added" in response:
+                conversation = [system_message]
+            else:
+                conversation.append({"role": "user", "content": user_message})
+                conversation.append({"role": "assistant", "content": response})
+            chat.append({"role": "user", "content": user_message})
+            chat.append({"role": "assistant", "content": response})
         
-        return render_template('docagent.html', conversation=conversation)
+        return render_template('docagent.html', conversation=chat)
