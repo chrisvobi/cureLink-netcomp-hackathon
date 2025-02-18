@@ -275,6 +275,11 @@ def init_appointments_route(app):
         specialty = session['specialty']
         global conversation # current conversation not previous
         doctors = find_doctors_by_criteria(specialty)
+        # checks if user needs pwd accessible
+        if session['need_pwd']:
+            doctors = [doctor for doctor in doctors if doctor["pwd_accessible"] == 1]
+
+
         global checked_doctors
         if not checked_doctors:
             checked_doctors = True
@@ -283,12 +288,12 @@ def init_appointments_route(app):
             if doctors:
                     found_doctors.append({
                         "role": "assistant",
-                        "content": f"I found {len(doctors)} {specialty}(s) near you. Here are some options:"
+                        "content": f"I found {len(doctors)} {specialty}(s){' with pwd access' if session['need_pwd'] else ''} near you. Here are some options:"
                     })
             else:
                 found_doctors.append({
                     "role": "assistant",
-                    "content": f"Sorry, I couldn't find any {specialty}(s) near you. Please try again later."
+                    "content": f"Sorry, I couldn't find any {specialty}(s){' with pwd access' if session['need_pwd'] else ''} near you. Please try again later."
                 })
                 doctors = [{
                         "name": None,
