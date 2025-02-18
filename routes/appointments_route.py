@@ -10,10 +10,10 @@ def choose_appointment (name, date_time, doctors):
     if name is None: return "Please provide a doctor's name."
     if date_time is None: return "Please provide a date and time for the appointment."
     for doctor in doctors:
-        if name.lower() not in doctor['name'].lower(): return f"{name} is not available. Please choose another doctor."
-        else:
-            if date_time not in doctor['available_slots']: return f"Sorry, I couldn't find an available slot for {name} at {date_time}. Make sure you chose right."
-        return {"doctor_id": doctor['doctor_id'], "date_time": date_time}
+        if name.lower() in doctor['name'].lower():
+            if date_time in doctor['available_slots']: return {"doctor_id": doctor['doctor_id'], "date_time": date_time}
+    return f"Sorry, {name} is not available at {date_time}. Please choose another date and time."
+        
 
 def book_appointment(patient_id, appointment):
     db = get_db_connection("appointment_user")
