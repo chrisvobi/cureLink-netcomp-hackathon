@@ -15,7 +15,7 @@ def insert_slots_multiple_days(doctor_id: int, start_day: list[str], start_time:
         if "Successfully added" in res:
             total_slots += int(res.split()[2])
     if total_slots > 0:
-        return f"Successfully added {total_slots} slots."
+        return f"Successfully added {total_slots} slots as these were available in your schedule."
     else:
         return "No slots were added as you already have slots for these dates"
 
@@ -24,7 +24,6 @@ def insert_slots_multiple_days_second(doctor_id: int, start_day: list[str], star
 
     results = []  # To store the results if needed
     for day in start_day:
-        print(doctor_id, day, start_time, interval, end_day, end_time)  
         result = insert_slots2(doctor_id, day, start_time, interval, end_day, end_time)  # Call insert_slots for each day
         results.append(result)  # Collect each result
         
@@ -33,7 +32,7 @@ def insert_slots_multiple_days_second(doctor_id: int, start_day: list[str], star
         if "Successfully added" in res:
             total_slots += int(res.split()[2])
     if total_slots > 0:
-        return f"Successfully added {total_slots} slots."
+        return f"Successfully added {total_slots} slots as these were available in your schedule."
     else:
         return "No slots were added as you already have slots for these dates"
 
@@ -149,7 +148,7 @@ def insert_slots(doctor_id: int, start_day: str, start_time: str, interval=60, e
     db.commit()
 
     if len(correct_dates) > 0:
-        return f"Successfully added {len(correct_dates)} slots."
+        return f"Successfully added {len(correct_dates)} slots as these were available in your schedule."
     else:
         return "No slots were added as you already have slots for these dates"
 
@@ -224,7 +223,7 @@ def insert_slots2(doctor_id: int, start_day: str, start_time: str, interval=60, 
 
     # Return a message depending on how many slots were added
     if len(correct_dates) > 0:
-        return f"Successfully added {len(correct_dates)} slots."
+        return f"Successfully added {len(correct_dates)} slots as these were available in your schedule."
     else:
         return "No slots were added as you already have slots for these dates or they are in the past."
 
@@ -254,7 +253,6 @@ def create_appointments(conversation, user_message):
     "end_day": end_day,
     "end_time": end_time,
     }
-    print(args)
     fun = output.function_call.name
     call = call_function(fun, args)
     return call
