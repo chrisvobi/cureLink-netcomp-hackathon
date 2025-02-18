@@ -10,6 +10,8 @@ from .account_route import init_account_route
 from .doctor_appointments_route import init_doctor_appointments_route
 from .doctor_account_route import init_doctor_account_route
 
+
+# Initialize all application routes
 def init_routes(app):
     init_login_route(app)
     init_main_route(app)

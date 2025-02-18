@@ -3,17 +3,17 @@ import mysql.connector
 from flask import flash
 
 def get_db_connection(user_type):
-    # Load DB secrets
+    # Load database credentials from db.json
     with open('db.json', 'r') as config_file:
         config = json.load(config_file)
 
-    # Returns a database connection based on the user type
-    db_user = config[user_type]
+    # Retrieve user credentials for the specified user type
+    db_user = config.get(user_type)
     if not db_user:
-            flash(f"Database user type '{user_type}' not found in config.", "danger")
-            return None 
+        flash(f"Database user type '{user_type}' not found in config.", "danger")
+        return None 
     
-    # Connects as user type
+    # Establish a connection to the MySQL database
     db = mysql.connector.connect(
         host=config["host"],
         user=db_user["user"],
@@ -21,6 +21,7 @@ def get_db_connection(user_type):
         database=config["database"]
     )
     
+    # Check if the connection failed
     if db is None:
         flash("Database connection failed!", "danger")
         return None
