@@ -6,24 +6,36 @@ from utils.db_connection import get_db_connection
 
 def insert_slots_multiple_days(doctor_id: int, start_day: list[str], start_time: str, interval=60,end_day=None, end_time=None):
     """Handles inserting slots for multiple days, supporting both weekdays and specific dates."""
-    print("HEREHEHEHEHEHEHHEHEHEHEHEHEHEHEHEHEHEH")
     results = []  # To store the results if needed
     for day in start_day:
         result = insert_slots(doctor_id, day, start_time, interval, end_day, end_time)  # Call insert_slots for each day
         results.append(result)  # Collect each result 
-    return results  # Return the collected results after the loop
+    total_slots = 0
+    for res in results:
+        if "Successfully added" in res:
+            total_slots += int(res.split()[2])
+    if total_slots > 0:
+        return f"Successfully added {total_slots} slots."
+    else:
+        return "No slots were added as you already have slots for these dates"
 
 def insert_slots_multiple_days_second(doctor_id: int, start_day: list[str], start_time: str, interval=60,end_day=None, end_time=None):
     """Handles inserting slots for multiple days, supporting both weekdays and specific dates."""
 
     results = []  # To store the results if needed
-    print("MAMAMAMMAMAMAMMAMMAMAMAMAM")
     for day in start_day:
         print(doctor_id, day, start_time, interval, end_day, end_time)  
         result = insert_slots2(doctor_id, day, start_time, interval, end_day, end_time)  # Call insert_slots for each day
         results.append(result)  # Collect each result
         
-    return results  # Return the collected results after the loop
+    total_slots = 0
+    for res in results:
+        if "Successfully added" in res:
+            total_slots += int(res.split()[2])
+    if total_slots > 0:
+        return f"Successfully added {total_slots} slots."
+    else:
+        return "No slots were added as you already have slots for these dates"
 
 def get_dates_in_range(start_day: str, end_day: str) -> list[str]:
     """Returns the dates between a start and end day"""
@@ -427,7 +439,6 @@ def init_docagent_route(app):
             return redirect(url_for('login'))  # Redirect patients away
         
         global conversation # current conversation
-        print(conversation)
 
         if request.method == 'POST':
             conversation = eval(request.form['conversation'])  # Convert string back to list
