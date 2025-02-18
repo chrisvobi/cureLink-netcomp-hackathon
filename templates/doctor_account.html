@@ -5,22 +5,29 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_account.css') }}">
     <script>
         function toggleEdit() {
-            let inputs = document.querySelectorAll(".editable");
-            let isEditing = document.getElementById("editBtn").innerText === "Edit";
+        let inputs = document.querySelectorAll(".editable");
+        let selects = document.querySelectorAll("select.editable");
+        let isEditing = document.getElementById("editBtn").innerText === "Edit";
 
-            inputs.forEach(input => {
-                input.readOnly = !isEditing;
-                input.style.border = isEditing ? "1px solid black" : "none";
-                input.style.background = isEditing ? "#f8f8f8" : "transparent";
-            });
+        inputs.forEach(input => {
+            input.readOnly = !isEditing;
+            input.style.border = isEditing ? "1px solid black" : "none";
+            input.style.background = isEditing ? "#f8f8f8" : "transparent";
+        });
 
-            document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
-            document.getElementById("cancelBtn").style.display = isEditing ? "inline-block" : "none";
+        selects.forEach(select => {
+            select.disabled = !isEditing;
+        });
 
-            if (!isEditing) {
-                saveChanges();
-            }
+        document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
+        document.getElementById("cancelBtn").style.display = isEditing ? "inline-block" : "none";
+
+        if (!isEditing) {
+            selects.forEach(select => select.disabled = false);  // Ensure it's enabled before submitting
+            saveChanges();
         }
+    }
+
 
         function cancelEdit() {
             location.reload(); // Reload the page to discard changes
@@ -72,6 +79,15 @@
                 <tr>
                     <th>Street</th>
                     <td><input type="text" class="editable" name="street" value="{{ doctor[4] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Access for disabled people</th>
+                    <td>
+                        <select class="editable" name="pwd_accessible" disabled>
+                            <option value="yes" {% if doctor[5] == "yes" %}selected{% endif %}>Yes</option>
+                            <option value="no" {% if doctor[5] == "no" %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
                 </tr>
             </table>
             <br>

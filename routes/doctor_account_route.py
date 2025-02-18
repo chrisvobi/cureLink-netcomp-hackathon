@@ -12,7 +12,7 @@ def init_doctor_account_route(app):
         
         doctor_id = session['user_id']
         query = """
-            SELECT name, email, specialty, zip_code, street
+            SELECT name, email, specialty, zip_code, street, pwd_accessible
             FROM doctors
             WHERE doctor_id = %s
         """
@@ -23,6 +23,10 @@ def init_doctor_account_route(app):
         doctor = cur.fetchone()
         cur.close()
         conn.close()
+
+        if doctor:
+            doctor = list(doctor)
+            doctor[5] = "yes" if doctor[5] == 1 else "no"  # Convert to yes/no
 
         return render_template('doctor_account.html', doctor=doctor)
 
@@ -36,16 +40,22 @@ def init_doctor_account_route(app):
         specialty = request.form.get('specialty')
         zip_code = request.form.get('zip_code')
         street = request.form.get('street')
+        pwd_accessible = request.form.get('pwd_accessible')
+
+        print(f"pwd_accessible from form: {pwd_accessible}")  # Debugging statement
+
+        # Convert "yes"/"no" to 1/0 for the database
+        pwd_accessible = 1 if pwd_accessible == "yes" else 0
 
         update_query = """
             UPDATE doctors
-            SET name = %s, specialty = %s, zip_code = %s, street = %s
+            SET name = %s, specialty = %s, zip_code = %s, street = %s, pwd_accessible = %s
             WHERE doctor_id = %s
         """
 
         conn = get_db_connection("doc_account_user")
         cur = conn.cursor()
-        cur.execute(update_query, (name, specialty, zip_code, street, doctor_id))
+        cur.execute(update_query, (name, specialty, zip_code, street, pwd_accessible, doctor_id))
         conn.commit()
         cur.close()
         conn.close()
