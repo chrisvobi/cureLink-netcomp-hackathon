@@ -22,11 +22,11 @@
                     </tr>
                     {% for appointment in appointments_with_diagnosis %}
                     <tr>
-                        <td>{{ appointment[0] }}</td>
-                        <td>{{ appointment[1] }}</td>
-                        <td>{{ appointment[2] }}</td>
-                        <td>{{ appointment[3] }}</td>
-                        <td>{{ appointment[4] }}</td>
+                        <td>{{ appointment["name"] }}</td>
+                        <td>{{ appointment["date_time"] }}</td>
+                        <td>{{ appointment["status"] }}</td>
+                        <td>{{ appointment["diagnosis"] }}</td>
+                        <td>{{ appointment["medicine"] }}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -44,17 +44,25 @@
                     </tr>
                     {% for appointment in appointments_without_diagnosis %}
                     <tr>
-                        <td>{{ appointment[0] }}</td>
-                        <td>{{ appointment[1] }}</td>
-                        <td>{{ appointment[2] }}</td>
-                        <td>{{ appointment[3] }}</td>
-                        <td>{{ appointment[4] }}</td>
+                        <td>{{ appointment["name"] }}</td>
+                        <td>{{ appointment["date_time"] }}</td>
+                        <td>{{ appointment["status"] }}</td>
+                        <td>{{ appointment["diagnosis"] }}</td>
+                        <td>{{ appointment["medicine"] }}</td>
                     </tr>
                     {% endfor %}
                 </table>
             </div>
         </div>
 
+        <br>
+        <div class="conversation-box">
+            {% for message in chat %}
+                <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+            {% endfor %}
+        </div>
+        <br>
+        
         <!-- Feedback Section -->
         <button class="feedback-btn" onclick="toggleFeedback()">Give Feedback</button>
 
@@ -69,11 +77,11 @@
         <br>
         <a class="action-button" href="{{ url_for('doctor_page') }}">Back to Doctor Page</a>
 
-        {% if success %}
+        <!-- {% if success %}
             <p class="success-message">Feedback submitted successfully!</p>
         {% elif error %}
             <p class="error-message">{{ error }}</p>
-        {% endif %}
+        {% endif %} -->
     </div>
 
     <script>
