@@ -60,14 +60,17 @@ relevance_check ={
     "content": ("You are a medical assisant that classifies whether a given input is medically relevant."
     "User input must contain health related or medical terms.")
 }
-def ask_pwd_access(conversation) -> PWDCheck:
-    completion = client.beta.chat.completions.parse(
-        model=model,
-        messages=conversation,
-        response_format=PWDCheck,
-    )
-    return completion.choices[0].message.parsed
+def ask_pwd_access(user_message) -> PWDCheck:
+    completion = client.beta.chat.completions.parsed(
+    model=model,
+    messages=[
+        {"role": "system", "content": "Ask the user if they need a doctor with PWD access."},
+        {"role": "user", "content": user_message}
+    ],
+    response_format=PWDCheck,)
+    return completion['choices'][0].message.parsed.PWDCheck 
 # Function to check if user input is relevant
+
 def validate_input(user_message,conversation) -> bool:
     """
     Determines whether the user's message is medically relevant.
@@ -133,20 +136,12 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
     )
     return completion.choices[0].message.parsed
 
+
 # get the closest specialty from the database
-def get_closest_specialty(specialty, needs_pwd_access=False):
-    # fetch all specialties from the database
-    completion = client.beta.chat.completions.parse(
-        model=model,
-        messages=[{"role": "system", "content": "Get specialties from the database, taking into account if the user needs a doctor with PWD access."}],
-        response_format=DoctorExtraction,
-    )
+def get_closest_specialty(specialty):
     db = get_db_connection("login_user")
     cursor = db.cursor()
-    if needs_pwd_access:
-        query = """SELECT DISTINCT(specialty) FROM doctors WHERE pwd_access = TRUE"""
-    else:
-        query = """SELECT DISTINCT(specialty) FROM doctors"""
+    query = """SELECT DISTINCT(specialty) FROM doctors"""
     cursor.execute(query)
     specialties = [row[0] for row in cursor.fetchall()]
     cursor.close()
@@ -231,12 +226,16 @@ def init_agent_route(app):
             # Check if user requested a specific doctor
             request_doctor = check_request_for_doctor(conversation)
             if request_doctor.confidence_score > 0.95 and request_doctor.specialty != None:
-
-                pwd_access = ask_pwd_access(conversation)
+                pwd_access = ask_pwd_access(user_message)
                 session["needs_pwd_access"] = pwd_access.needs_pwd
                 # check for the specialty in the database
-            request_doctor.specialty = get_closest_specialty(request_doctor.specialty, needs_pwd_access = pwd_access.needs_pwd)
-            if request_doctor.specialty is not None:
+            request_doctor.specialty = get_closest_specialty(request_doctor.specialty)
+            if session["needs_pwd_access"] == 1 and request_doctor.specialty is not None:
+                conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}.I will find doctors with PWD access."})
+                session['specialty'] = request_doctor.specialty
+                return render_template('agent.html', conversation=conversation, button=True)
+            
+            elif request_doctor.specialty is not None:
                 conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}."})
                 session['specialty'] = request_doctor.specialty
                 session['conversation'] = conversation
@@ -249,11 +248,17 @@ def init_agent_route(app):
         if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
             # find the closest specialty in the database
 
-            pwd_check = ask_pwd_access(conversation)
+            pwd_check = ask_pwd_access(user_message)
             session["needs_pwd_access"] = pwd_check.needs_pwd
+
+            doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty)
+            if doctor_extraction.specialty and session["needs_pwd_access"] == 1:
+                conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}. I will find doctors with PWD access."})
+                session['specialty'] = doctor_extraction.specialty
+                session['conversation'] = conversation
+                return render_template('agent.html', conversation=conversation, button=True)
             
-            doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty, needs_pwd_access=pwd_check.needs_pwd)
-            if doctor_extraction.specialty is not None:
+            elif doctor_extraction.specialty is not None:
                 conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
                 session['specialty'] = doctor_extraction.specialty
                 session['conversation'] = conversation

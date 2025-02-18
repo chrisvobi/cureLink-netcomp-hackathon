@@ -46,6 +46,25 @@ def book_appointment(patient_id, appointment):
 
     return f"Appointment at {appointment['date_time']} has been booked successfully."
 
+def match_specialty_doctorids(specialty):
+    db = get_db_connection("login_user")
+    cursor = db.cursor()
+    query = """SELECT doctor_id FROM doctors WHERE specialty = %s and pwd_accessible = 1"""
+    cursor.execute(query, (specialty,))
+    doctor_ids = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    db.close()
+    return doctor_ids
+
+def bring_pwd_compatible_doctors(doctorids):
+    db = get_db_connection("login_user")
+    cursor = db.cursor()
+    query = """SELECT specialty FROM doctors WHERE doctor_id IN %s"""
+    cursor.execute(query, (doctorids,))
+    specialties = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return specialties
 
 semianswer = ""
 def agent_choose_book_appointment(conversation, user_message, doctors):
@@ -199,12 +218,11 @@ def haversine(lat1, lon1, lat2, lon2):
 
 def find_doctors_by_criteria(specialty):
     # Get patient data from session and calculate coordinates
-    
     """Ανακτά και εμφανίζει γιατρούς με βάση την πόλη και την ειδικότητα, ταξινομημένους κατά απόσταση από τον ασθενή."""
     db = get_db_connection("appointment_user")
     if db is None:
         return
-
+    needs_pwd = session['needs_pwd_accessible']
     cursor = db.cursor(dictionary=True)
 
 
@@ -218,15 +236,27 @@ def find_doctors_by_criteria(specialty):
     patient_address = f"{session['street']} { patient_data['city']} {session['zip_code']}"
     patient_city =  patient_data['city']
     patient_lat, patient_lon = get_coordinates(patient_address)
-    query = """
-    SELECT d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city, d.pwd_accessible,
-           GROUP_CONCAT(aslot.date_time ORDER BY aslot.date_time SEPARATOR ', ') AS available_slots
-    FROM doctors d
-    LEFT JOIN available_slots aslot ON d.doctor_id = aslot.doctor_id AND aslot.booked = 0
-    LEFT JOIN address addr ON d.zip_code = addr.zip_code
-    WHERE d.specialty = %s AND addr.city = %s
-    GROUP BY d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city
-    """
+    if needs_pwd:
+        query = """
+        SELECT d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city, d.pwd_accessible,
+            GROUP_CONCAT(aslot.date_time ORDER BY aslot.date_time SEPARATOR ', ') AS available_slots
+        FROM doctors d
+        LEFT JOIN available_slots aslot ON d.doctor_id = aslot.doctor_id AND aslot.booked = 0
+        LEFT JOIN address addr ON d.zip_code = addr.zip_code
+        WHERE d.specialty = %s AND addr.city = %s AND d.pwd_accessible = 1
+        GROUP BY d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city
+        """
+    else:
+        query = """
+        SELECT d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city, d.pwd_accessible,
+            GROUP_CONCAT(aslot.date_time ORDER BY aslot.date_time SEPARATOR ', ') AS available_slots
+        FROM doctors d
+        LEFT JOIN available_slots aslot ON d.doctor_id = aslot.doctor_id AND aslot.booked = 0
+        LEFT JOIN address addr ON d.zip_code = addr.zip_code
+        WHERE d.specialty = %s AND addr.city = %s 
+        GROUP BY d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city
+        """
+        
     cursor.execute(query, (specialty, patient_city))
     
     doctors = cursor.fetchall()
