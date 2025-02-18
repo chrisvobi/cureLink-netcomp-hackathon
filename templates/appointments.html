@@ -47,28 +47,24 @@
                 </tr>
             {% endfor %}
         </table>
-        <br>
-    </div>
-    <br>
-
-    <div class="conversation-box">
-        {% for message in conversation %}
-            {% if loop.index > 1 %}  {# Skip the first message #}
-                <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
-            {% endif %}
-        {% endfor %}
-    </div>
-
-    
-    <br>
-    <form action="{{ url_for('appointments_page') }}" method="post">
-        <label for="user_message">Your Message:</label><br>
-        <textarea id="user_message" name="user_message" rows="4" cols="50" required></textarea><br><br>
         
-        <button type="submit">Send Message</button>
-    </form>
-    
-    <a class="action-button" href="{{ url_for('main_page') }}">Back to Main</a>
+        <div class="conversation-wrapper">
+            <div class="conversation-box">
+                {% for message in conversation %}
+                    {% if loop.index > 1 %}  {# Skip the first message #}
+                        <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
 
+        <form action="{{ url_for('appointments_page') }}" method="post" class="message-form">
+            <label for="user_message">Your Message:</label><br>
+            <textarea id="user_message" name="user_message" rows="4" cols="50" required></textarea><br><br>
+            <button type="submit" class="action-button">Send Message</button>
+        </form>
+        
+        <a class="action-button" href="{{ url_for('main_page') }}">Back to Main</a>
+    </div>
 </body>
 </html>

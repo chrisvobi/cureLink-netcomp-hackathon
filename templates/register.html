@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
 <body>
-    <!-- Logo πάνω από το container στην μέση -->
     <div class="logo-top">
         <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo">
     </div>
@@ -17,7 +16,7 @@
             <div class="logo-container">
                 <h2>Register Page</h2>
             </div>
-            
+
             {% with messages = get_flashed_messages(with_categories=True) %}
                 {% if messages %}
                     <div class="flash-messages">
@@ -27,7 +26,7 @@
                     </div>
                 {% endif %}
             {% endwith %}
-            
+
             <form action="{{ url_for('register') }}" method="post">
                 <label>Name:</label>
                 <input type="text" name="name" required>
@@ -53,10 +52,43 @@
                     <option value="doctor">Doctor</option>
                 </select>
 
-                <!-- Specialty field (hidden by default) -->
+                <!-- Specialty dropdown -->
                 <div id="specialty_field" style="display: none;">
                     <label>Specialty:</label>
-                    <input type="text" name="specialty" id="specialty">
+                    <select name="specialty" id="specialty">
+                        <option value="Allergist and Immunologist">Allergist and Immunologist</option>
+                        <option value="Cardiologist">Cardiologist</option>
+                        <option value="Dermatologist">Dermatologist</option>
+                        <option value="Endocrinologist">Endocrinologist</option>
+                        <option value="Gastroenterologist">Gastroenterologist</option>
+                        <option value="General Practitioner">General Practitioner</option>
+                        <option value="Hematologist">Hematologist</option>
+                        <option value="Hepatologist">Hepatologist</option>
+                        <option value="Infectious Disease">Infectious Disease</option>
+                        <option value="Internist">Internist</option>
+                        <option value="Nephrologist">Nephrologist</option>
+                        <option value="Neurologist">Neurologist</option>
+                        <option value="Obstetrician">Obstetrician</option>
+                        <option value="Gynecologist">Gynecologist</option>
+                        <option value="Oncologist">Oncologist</option>
+                        <option value="Ophthalmologist">Ophthalmologist</option>
+                        <option value="Optometrist">Optometrist</option>
+                        <option value="Orthodontist">Orthodontist</option>
+                        <option value="Orthopedic Surgeon">Orthopedic Surgeon</option>
+                        <option value="Otolaryngologist">Otolaryngologist</option>
+                        <option value="Pathologist">Pathologist</option>
+                        <option value="Pediatrician">Pediatrician</option>
+                        <option value="Physiatrist">Physiatrist</option>
+                        <option value="Plastic Surgeon">Plastic Surgeon</option>
+                        <option value="Psychiatrist">Psychiatrist</option>
+                        <option value="Pulmonologist">Pulmonologist</option>
+                        <option value="Radiologist">Radiologist</option>
+                        <option value="Rheumatologist">Rheumatologist</option>
+                        <option value="Sleep Medicine Specialist">Sleep Medicine Specialist</option>
+                        <option value="Sports Medicine Physician">Sports Medicine Physician</option>
+                        <option value="Toxicologist">Toxicologist</option>
+                        <option value="Urologist">Urologist</option>
+                    </select>
                 </div>
 
                 <button type="submit">Register</button>
