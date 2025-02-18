@@ -253,7 +253,6 @@ def init_agent_route(app):
                     conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
                     session['waiting_for_pwd'] = True # initialize flag
                     session['specialty'] = request_doctor.specialty
-                    session['conversation'] = conversation
                     return render_template('agent.html', conversation=conversation)
                 else:
                     conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
@@ -279,7 +278,6 @@ def init_agent_route(app):
                     conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
                     session['waiting_for_pwd'] = True # initialize flag
                     session['specialty'] = doctor_extraction.specialty
-                    session['conversation'] = conversation
                     return render_template('agent.html', conversation=conversation, button=True)
                 # if specialty not in database (not correct specialty)
                 else:

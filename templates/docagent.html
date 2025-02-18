@@ -10,7 +10,7 @@
         <h2>Your personal agent</h2>
 
         <div class="conversation-box">
-            <p class="message"><strong>assistant:</strong> What can I help you with?</p>
+            <p class="message"><strong>assistant:</strong> When would you like to schedule your appointment(s)?</p>
             {% for message in conversation %}
                 {% if loop.index > 1 %}  {# Skip the first message #}
                     <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
