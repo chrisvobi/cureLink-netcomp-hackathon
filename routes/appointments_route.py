@@ -248,8 +248,9 @@ def find_doctors_by_criteria(specialty):
 
     # check if the date is in the future
     today = datetime.today()
-    correct_slots = []
     for doctor in doctor_distances:
+        correct_slots = []
+        if doctor['available_slots'] is None: continue
         list_slots = doctor['available_slots'].split(', ')
         for slot in list_slots:
             if datetime.strptime(slot, '%Y-%m-%d %H:%M:%S') > today:
@@ -258,7 +259,6 @@ def find_doctors_by_criteria(specialty):
         doctor['available_slots'] = list_slots
     
     return doctor_distances
-
 
 checked_doctors = False
 found_doctors=[]
