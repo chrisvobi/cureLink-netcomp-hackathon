@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
 <body>
-    <!-- Logo πάνω από το container στην μέση -->
     <div class="logo-top">
         <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo">
     </div>
@@ -17,7 +16,7 @@
             <div class="logo-container">
                 <h2>Register Page</h2>
             </div>
-            
+
             {% with messages = get_flashed_messages(with_categories=True) %}
                 {% if messages %}
                     <div class="flash-messages">
@@ -27,7 +26,7 @@
                     </div>
                 {% endif %}
             {% endwith %}
-            
+
             <form action="{{ url_for('register') }}" method="post">
                 <label>Name:</label>
                 <input type="text" name="name" required>
@@ -53,10 +52,30 @@
                     <option value="doctor">Doctor</option>
                 </select>
 
-                <!-- Specialty field (hidden by default) -->
+                <!-- Specialty dropdown -->
                 <div id="specialty_field" style="display: none;">
                     <label>Specialty:</label>
-                    <input type="text" name="specialty" id="specialty">
+                    <select name="specialty" id="specialty">
+                        <option value="Anesthesiologist">Anesthesiologist</option>
+                        <option value="Cardiologist">Cardiologist</option>
+                        <option value="Dermatologist">Dermatologist</option>
+                        <option value="Endocrinologist">Endocrinologist</option>
+                        <option value="Gastroenterologist">Gastroenterologist</option>
+                        <option value="Infectious Disease">Infectious Disease</option>
+                        <option value="Neurologist">Neurologist</option>
+                        <option value="Oncologist">Oncologist</option>
+                        <option value="Ophthalmologist">Ophthalmologist</option>
+                        <option value="Psychiatrist">Psychiatrist</option>
+                        <option value="Pediatrician">Pediatrician</option>
+                        <option value="Otolaryngologist">Otolaryngologist</option>
+                        <option value="Orthopedic">Orthopedic</option>
+                        <option value="Internal Medicine">Internal Medicine</option>
+                        <option value="Pathologist">Pathologist</option>
+                        <option value="Allergy and Immunologist">Allergy and Immunologist</option>
+                        <option value="Obstetrics and Gynecologist">Obstetrics and Gynecologist</option>
+                        <option value="Nephrologist">Nephrologist</option>
+                        <option value="Hematologist">Hematologist</option>
+                    </select>
                 </div>
 
                 <button type="submit">Register</button>

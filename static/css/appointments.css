@@ -8,7 +8,7 @@ body {
 }
 
 .container {
-    padding: 50px;
+    padding: 70px;
     background: linear-gradient(to right, #B0C4FF, #6A85D3);
     border-radius: 10px;
     width: 70%;
@@ -28,13 +28,28 @@ h2 {
     margin-bottom: 20px;
 }
 
-.conversation {
-    background-color: #f9f9f9;
-    color: #333;
+.conversation-container {
+    width: 80%;
+    max-width: 600px;
+    background-color: white;
+    color: black;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px auto;
+    border: 2px solid #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.conversation-box {
+    text-align: left;
+}
+
+.message {
     padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    border: 2px solid black;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 5px;
 }
 
 .appointments-table {

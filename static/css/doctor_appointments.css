@@ -30,21 +30,35 @@ h2 {
 
 .tables-container {
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 20px;
+    justify-content: space-between; 
+    align-items: flex-start; 
+    width: 100%; 
+    padding: 20px;
+    transform: translateX(-30px);
+}
+
+.appointments-wrapper {
+    display: flex;
+    justify-content: center; 
+    width: 50%; 
 }
 
 .appointments-table {
-    width: 45%;
+    width: 80%; 
     border-collapse: collapse;
-    margin: 20px 0;
+    margin: 10px 0;
     color: #333;
     background-color: #f9f9f9;
     border-radius: 10px;
     overflow: hidden;
 }
 
+
+.table-left, .table-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Στοιχίζει επικεφαλίδα και πίνακα στο κέντρο του div */
+}
 .appointments-table th, .appointments-table td {
     padding: 10px;
     text-align: center;
@@ -54,7 +68,9 @@ h2 {
 .appointments-table th {
     background-color: #5A78E8;
     color: white;
+    text-align: center;
 }
+
 
 tr:nth-child(even) td {
     background-color: #e6e6ff;
@@ -130,4 +146,3 @@ tr:nth-child(even) td {
     background-color: #f0f0f0;
     color: #333;
 }
-
