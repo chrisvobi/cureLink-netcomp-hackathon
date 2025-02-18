@@ -45,6 +45,7 @@ system_message = {
                  "names are given in greeklish"
                  "ignore pronouns such as mr, mrs, miss, dr, etc."
                  "the diagnosis can be that the patient is healthy"
+                 "diagnosis shouldn't be a random word"
                 ),
 }
 
@@ -95,8 +96,7 @@ def update_appointment(doctor_id, appointments, patient_name, diagnosis, medicat
             db.close()
 
             return f"Appointment for {appointment['name']} updated successfully"
-        else:
-            return f"Patient {patient_name} not found"
+    return f"Patient {patient_name} not found"
 
 
 def get_doctor_feedback(conversation,user_message):
