@@ -57,3 +57,4 @@ If you followed the above steps you should be able to now use the application. M
 - Intergrate **OpenAI Whisper** so both patients and doctors can talk *(instead of typing to the user)*.
 
 ## Extra Documentation
+For extra documentation on how the app works you can check our small presentation [here](CURELINK.pdf)
