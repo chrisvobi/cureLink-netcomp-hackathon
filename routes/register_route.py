@@ -50,6 +50,8 @@ def init_register_route(app):
             city = request.form['city']
             user_type = request.form['user_type']
             specialty = request.form.get('specialty') if user_type == "doctor" else None  # Only get if doctor
+            age = request.form.get('age') if user_type == "patient" else None
+            gender = request.form.get('gender') if user_type == "patient" else None
 
             # Check if email is valid
             if not is_valid_email(email):
@@ -62,7 +64,7 @@ def init_register_route(app):
                 return render_template('register.html')
 
             # Check if all fields are filled
-            if not name or not email or not password or not zip_code or not street or not city:
+            if not name or not email or not password or not zip_code or not street or not city or not age:
                 flash("All fields are required!", "danger")
                 return render_template('register.html')
 
@@ -94,8 +96,8 @@ def init_register_route(app):
                     # Save user in the patients table
                     patient_id = get_first_available_id(cursor, "patients", "patient_id")
                     cursor.execute(
-                        "INSERT INTO patients (patient_id, name, email, password, zip_code, street) VALUES (%s, %s, %s, %s, %s, %s)",
-                        (patient_id, name, email, hashed_password, zip_code, street)
+                        "INSERT INTO patients (patient_id, name, email, password, zip_code, street, age, gender) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                        (patient_id, name, email, hashed_password, zip_code, street, age, gender)
                     )
                 elif user_type == "doctor":
                     # Save user in the doctors table
