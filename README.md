@@ -51,7 +51,7 @@ docker compose up
 ```
 5. When the docker build finishes open a web browser and direct to `localhost:80`.
 
-If you followed the above steps you should be able to now use the application. Mocked doctor and patients accounts will be provided to you.
+If you followed the above steps you should be able to now use the application. Mocked doctor and patients accounts are provided to you at database_data/doctor_accounts.txt and database_data/patient_accounts.txt .
 
 ## Future Expansions
 - Intergrate **OpenAI Whisper** so both patients and doctors can talk *(instead of typing to the user)*.
