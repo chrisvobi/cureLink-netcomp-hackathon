@@ -21,6 +21,8 @@ system_message = {
         "You are a medical AI assistant. Your goal is to ask relevant follow-up questions "
         "before making a diagnosis or recommending a specialist. "
         "Only recommend a specialist when you are at least 90% confident. "
+        "recommend only ONE specialist"
+        "your answer about a specialist should be 1-2 words at max, ideally just one"
         "If unsure, keep asking questions to gather more information. "
         "Never make bold assumptions or provide a diagnosis too early."
         "If you are at least 90% confident that the symptoms are not severe, and you have ruled out that the patient needs a doctor, recommend simple at-home treatment."
@@ -263,6 +265,7 @@ def init_agent_route(app):
             doctor_extraction = extract_doctor(conversation)
             if doctor_extraction.confidence_score > 0.9 and doctor_extraction.specialty != None:
                 # find the closest specialty in the database
+                print(doctor_extraction.specialty)
                 doctor_extraction.specialty = get_closest_specialty(doctor_extraction.specialty)
                 if doctor_extraction.specialty is not None:
                      # Check if the user needs pwd access
