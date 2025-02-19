@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+    <title>Doctor Account Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_account.css') }}">
+    <script>
+        function toggleEdit() {
+            let inputs = document.querySelectorAll(".editable");
+            let selects = document.querySelectorAll("select.editable");
+            let isEditing = document.getElementById("editBtn").innerText === "Edit";
+
+            inputs.forEach(input => {
+                if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
+                    input.readOnly = !isEditing;
+                    input.style.border = isEditing ? "1px solid black" : "none";
+                    input.style.background = isEditing ? "#f8f8f8" : "transparent";
+                }
+            });
+
+            selects.forEach(select => {
+                select.disabled = !isEditing;
+            });
+
+            document.getElementById("editBtn").innerText = isEditing ? "Save" : "Edit";
+            document.getElementById("cancelBtn").style.display = isEditing ? "inline-block" : "none";
+
+            if (!isEditing) {
+                // Ensure all dropdowns are enabled before submitting
+                selects.forEach(select => select.removeAttribute('disabled'));
+                saveChanges();
+            }
+        }
+
+
+
+        function cancelEdit() {
+            location.reload(); // Reload the page to discard changes
+        }
+
+        function saveChanges() {
+            let formData = new FormData(document.getElementById("editForm"));
+
+            fetch('/update_doctor_account', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Details updated successfully!");
+                    location.reload();
+                } else {
+                    alert("Error updating details.");
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo" class="logo">
+        <h2>Doctor Account Details</h2>
+
+        {% if doctor %}
+        <form id="editForm">
+            <table class="details-table">
+                <tr>
+                    <th>Name</th>
+                    <td><input type="text" class="editable" name="name" value="{{ doctor[0] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td><input type="text" class="editable" name="email" value="{{ doctor[1] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Specialty</th>
+                    <td>
+                        <select class="editable" name="specialty" disabled>
+                            <option value="Allergist and Immunologist" {% if doctor[2] == "Allergist and Immunologist" %}selected{% endif %}>Allergist and Immunologist</option>
+                            <option value="Cardiologist" {% if doctor[2] == "Cardiologist" %}selected{% endif %}>Cardiologist</option>
+                            <option value="Dermatologist" {% if doctor[2] == "Dermatologist" %}selected{% endif %}>Dermatologist</option>
+                            <option value="Endocrinologist" {% if doctor[2] == "Endocrinologist" %}selected{% endif %}>Endocrinologist</option>
+                            <option value="Gastroenterologist" {% if doctor[2] == "Gastroenterologist" %}selected{% endif %}>Gastroenterologist</option>
+                            <option value="General Practitioner" {% if doctor[2] == "General Practitioner" %}selected{% endif %}>General Practitioner</option>
+                            <option value="Hematologist" {% if doctor[2] == "Hematologist" %}selected{% endif %}>Hematologist</option>
+                            <option value="Hepatologist" {% if doctor[2] == "Hepatologist" %}selected{% endif %}>Hepatologist</option>
+                            <option value="Infectious Disease" {% if doctor[2] == "Infectious Disease" %}selected{% endif %}>Infectious Disease</option>
+                            <option value="Internist" {% if doctor[2] == "Internist" %}selected{% endif %}>Internist</option>
+                            <option value="Nephrologist" {% if doctor[2] == "Nephrologist" %}selected{% endif %}>Nephrologist</option>
+                            <option value="Neurologist" {% if doctor[2] == "Neurologist" %}selected{% endif %}>Neurologist</option>
+                            <option value="Obstetrician" {% if doctor[2] == "Obstetrician" %}selected{% endif %}>Obstetrician</option>
+                            <option value="Gynecologist" {% if doctor[2] == "Gynecologist" %}selected{% endif %}>Gynecologist</option>
+                            <option value="Oncologist" {% if doctor[2] == "Oncologist" %}selected{% endif %}>Oncologist</option>
+                            <option value="Ophthalmologist" {% if doctor[2] == "Ophthalmologist" %}selected{% endif %}>Ophthalmologist</option>
+                            <option value="Optometrist" {% if doctor[2] == "Optometrist" %}selected{% endif %}>Optometrist</option>
+                            <option value="Orthodontist" {% if doctor[2] == "Orthodontist" %}selected{% endif %}>Orthodontist</option>
+                            <option value="Orthopedic Surgeon" {% if doctor[2] == "Orthopedic Surgeon" %}selected{% endif %}>Orthopedic Surgeon</option>
+                            <option value="Otolaryngologist" {% if doctor[2] == "Otolaryngologist" %}selected{% endif %}>Otolaryngologist</option>
+                            <option value="Pathologist" {% if doctor[2] == "Pathologist" %}selected{% endif %}>Pathologist</option>
+                            <option value="Pediatrician" {% if doctor[2] == "Pediatrician" %}selected{% endif %}>Pediatrician</option>
+                            <option value="Physiatrist" {% if doctor[2] == "Physiatrist" %}selected{% endif %}>Physiatrist</option>
+                            <option value="Plastic Surgeon" {% if doctor[2] == "Plastic Surgeon" %}selected{% endif %}>Plastic Surgeon</option>
+                            <option value="Psychiatrist" {% if doctor[2] == "Psychiatrist" %}selected{% endif %}>Psychiatrist</option>
+                            <option value="Pulmonologist" {% if doctor[2] == "Pulmonologist" %}selected{% endif %}>Pulmonologist</option>
+                            <option value="Radiologist" {% if doctor[2] == "Radiologist" %}selected{% endif %}>Radiologist</option>
+                            <option value="Rheumatologist" {% if doctor[2] == "Rheumatologist" %}selected{% endif %}>Rheumatologist</option>
+                            <option value="Sleep Medicine Specialist" {% if doctor[2] == "Sleep Medicine Specialist" %}selected{% endif %}>Sleep Medicine Specialist</option>
+                            <option value="Sports Medicine Physician" {% if doctor[2] == "Sports Medicine Physician" %}selected{% endif %}>Sports Medicine Physician</option>
+                            <option value="Toxicologist" {% if doctor[2] == "Toxicologist" %}selected{% endif %}>Toxicologist</option>
+                            <option value="Urologist" {% if doctor[2] == "Urologist" %}selected{% endif %}>Urologist</option>
+                        </select>
+                    </td>
+                </tr>                
+                <tr>
+                    <th>Zip Code</th>
+                    <td><input type="text" class="editable" name="zip_code" value="{{ doctor[3] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Street</th>
+                    <td><input type="text" class="editable" name="street" value="{{ doctor[4] }}" readonly></td>
+                </tr>
+                <tr>
+                    <th>Access for disabled people</th>
+                    <td>
+                        <select class="editable" name="pwd_accessible" disabled>
+                            <option value="yes" {% if doctor[5] == "yes" %}selected{% endif %}>Yes</option>
+                            <option value="no" {% if doctor[5] == "no" %}selected{% endif %}>No</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <button type="button" id="editBtn" class="action-button" onclick="toggleEdit()">Edit</button>
+            <button type="button" id="cancelBtn" class="action-button cancel-button" onclick="cancelEdit()" style="display: none;">Cancel</button>
+        </form>
+        {% else %}
+        <p>No details available.</p>
+        {% endif %}
+
+        <br>
+        <a href="{{ url_for('doctor_page') }}" class="action-button">Back to Doctor Main Page</a>
+    </div>
+</body>
+</html>

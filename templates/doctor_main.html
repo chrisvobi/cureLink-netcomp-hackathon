@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+    <title>Doctor Main Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo" class="logo">
+        <div class="success-message">
+            Welcome back, Doctor!
+        </div>
+
+        <p class="info-text">Click the button below to proceed to the main page.</p>
+        <form action="{{ url_for('docagent_page') }}" method="get">
+            <button type="submit" class="action-button">Go to Agent Page</button>
+        </form>
+
+        <p class="info-text">Or, view your appointments:</p>
+        <form action="{{ url_for('doctor_appointments') }}" method="get">
+            <button type="submit" class="action-button">View Your Appointments</button>
+        </form>
+
+        <p class="info-text">To view your account details:</p>
+        <form action="{{ url_for('doctor_account_page') }}" method="get">
+            <button type="submit" class="action-button">View Account</button>
+        </form>
+
+        <p class="info-text">Logout from the system:</p>
+        <form action="{{ url_for('logout') }}" method="get">
+            <button type="submit" class="action-button logout-button" style="background-color: red; color: white;">
+                Logout
+            </button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(to right, #9BB1FF, #6A85D3);
+}
+
+.logo-top {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.logo-top img {
+    width: 120px;
+    border-radius: 25px;
+}
+
+.container {
+    display: flex;
+    width: 900px;
+    height: 1100px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.left-section {
+    width: 50%;
+    padding: 30px;
+    background: #B0C4FF;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.right-section {
+    width: 50%;
+    background: url('../images/Login_heart.png') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.flash-messages {
+    margin-bottom: 15px;
+}
+
+.flash {
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.flash.success {
+    background-color: #8BC34A;
+    color: #2E7D32;
+}
+
+.flash.danger {
+    background-color: #FFCDD2;
+    color: #C62828;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    color: #333;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+form input{
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 20px;
+    background: #f1f1f1;
+}
+
+form select {
+    width: 95%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 20px;
+    background: #f1f1f1;
+}
+
+form button {
+    background: #6A85D3;
+    color: white;
+    border: none;
+    width: 30%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+form button:hover {
+    background: #576BB1;
+}
+
+p {
+    margin-top: 10px;
+    color: #333;
+}
+
+p a {
+    color: #6A85D3;
+    text-decoration: none;
+}
+
+p a:hover {
+    text-decoration: underline;
+}

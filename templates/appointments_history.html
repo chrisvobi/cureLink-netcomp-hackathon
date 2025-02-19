@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+    <title>Appointments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/appointments_history.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
+        <h2>Your Appointments</h2>
+
+        <!-- Scheduled Appointments Table -->
+        <h3>Scheduled Appointments</h3>
+        {% if scheduled_appointments %}
+        <table class="appointments-table">
+            <tr>
+                <th>Doctor Name</th>
+                <th>Specialty</th>
+                <th>Appointment Date & Time</th>
+                <th>Status</th>
+                <th>Diagnosis</th>
+                <th>Medicine</th>
+            </tr>
+            {% for appointment in scheduled_appointments %}
+            <tr>
+                <td>{{ appointment[0] }}</td>
+                <td>{{ appointment[1] }}</td>
+                <td>{{ appointment[2] }}</td>
+                <td>{{ appointment[3] }}</td>
+                <td>{{ appointment[4] }}</td>
+                <td>{{ appointment[5] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-appointments">No scheduled appointments found.</p>
+        {% endif %}
+
+        <!-- Completed Appointments Table -->
+        <h3>Completed Appointments</h3>
+        {% if completed_appointments %}
+        <table class="appointments-table">
+            <tr>
+                <th>Doctor Name</th>
+                <th>Specialty</th>
+                <th>Appointment Date & Time</th>
+                <th>Status</th>
+                <th>Diagnosis</th>
+                <th>Medicine</th>
+            </tr>
+            {% for appointment in completed_appointments %}
+            <tr>
+                <td>{{ appointment[0] }}</td>
+                <td>{{ appointment[1] }}</td>
+                <td>{{ appointment[2] }}</td>
+                <td>{{ appointment[3] }}</td>
+                <td>{{ appointment[4] }}</td>
+                <td>{{ appointment[5] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="no-appointments">No completed appointments found.</p>
+        {% endif %}
+
+        <br>
+        <a class="action-button" href="{{ url_for('main_page') }}">Back to Main Page</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+<body>
+    <div class="logo-top">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo">
+    </div>
+
+    <div class="container">
+        <div class="left-section">
+            <div class="logo-container">
+                <h2>Register Page</h2>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <p class="flash {{ category }}">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('register') }}" method="post">
+                <label>Name:</label>
+                <input type="text" name="name" required>
+                
+                <label>Email:</label>
+                <input type="email" name="email" required>
+                
+                <label>Password:</label>
+                <input type="password" name="password" required>
+                
+                <label>Zip Code:</label>
+                <input type="text" name="zip_code" required>
+                
+                <label>Street:</label>
+                <input type="text" name="street" required>
+                
+                <label>City:</label>
+                <input type="text" name="city" required>
+                
+                <label>Register as:</label>
+                <select name="user_type" id="user_type" required onchange="toggleSpecialtyField()">
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                </select>
+                
+                <div id="patient_fields" style="display: block;">
+                    <label>Age:</label>
+                    <input type="number" name="age" id="age" min="1" max="150" required>
+                
+                    <label>Gender:</label>
+                    <select name="gender" id="gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <!-- Specialty dropdown -->
+                <div id="specialty_field" style="display: none;">
+                    <label>Specialty:</label>
+                    <select name="specialty" id="specialty">
+                        <option value="Allergist and Immunologist">Allergist and Immunologist</option>
+                        <option value="Cardiologist">Cardiologist</option>
+                        <option value="Dermatologist">Dermatologist</option>
+                        <option value="Endocrinologist">Endocrinologist</option>
+                        <option value="Gastroenterologist">Gastroenterologist</option>
+                        <option value="General Practitioner">General Practitioner</option>
+                        <option value="Hematologist">Hematologist</option>
+                        <option value="Hepatologist">Hepatologist</option>
+                        <option value="Infectious Disease">Infectious Disease</option>
+                        <option value="Internist">Internist</option>
+                        <option value="Nephrologist">Nephrologist</option>
+                        <option value="Neurologist">Neurologist</option>
+                        <option value="Obstetrician">Obstetrician</option>
+                        <option value="Gynecologist">Gynecologist</option>
+                        <option value="Oncologist">Oncologist</option>
+                        <option value="Ophthalmologist">Ophthalmologist</option>
+                        <option value="Optometrist">Optometrist</option>
+                        <option value="Orthodontist">Orthodontist</option>
+                        <option value="Orthopedic Surgeon">Orthopedic Surgeon</option>
+                        <option value="Otolaryngologist">Otolaryngologist</option>
+                        <option value="Pathologist">Pathologist</option>
+                        <option value="Pediatrician">Pediatrician</option>
+                        <option value="Physiatrist">Physiatrist</option>
+                        <option value="Plastic Surgeon">Plastic Surgeon</option>
+                        <option value="Psychiatrist">Psychiatrist</option>
+                        <option value="Pulmonologist">Pulmonologist</option>
+                        <option value="Radiologist">Radiologist</option>
+                        <option value="Rheumatologist">Rheumatologist</option>
+                        <option value="Sleep Medicine Specialist">Sleep Medicine Specialist</option>
+                        <option value="Sports Medicine Physician">Sports Medicine Physician</option>
+                        <option value="Toxicologist">Toxicologist</option>
+                        <option value="Urologist">Urologist</option>
+                    </select>
+                </div>
+
+                <button type="submit">Register</button>
+            </form>
+
+            <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+        </div>
+
+        <div class="right-section"></div>
+    </div>
+
+    <script>
+    function toggleSpecialtyField() {
+        var userType = document.getElementById("user_type").value;
+        var specialtyField = document.getElementById("specialty_field");
+        var patientFields = document.getElementById("patient_fields");
+
+        if (userType === "doctor") {
+            specialtyField.style.display = "block";
+            document.getElementById("specialty").setAttribute("required", "true");
+        } else {
+            specialtyField.style.display = "none";
+            document.getElementById("specialty").removeAttribute("required");
+        }
+
+        if (userType === "patient") {
+            patientFields.style.display = "block";
+            document.getElementById("age").setAttribute("required", "true");
+            document.getElementById("gender").setAttribute("required", "true");
+        } else {
+            patientFields.style.display = "none";
+            document.getElementById("age").removeAttribute("required");
+            document.getElementById("gender").removeAttribute("required");
+        }
+    }
+    </script>
+</body>
+</html>

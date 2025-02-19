@@ -1,0 +1,118 @@
+body {
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+}
+
+.container {
+    padding: 70px;
+    background: linear-gradient(to right, #B0C4FF, #6A85D3);
+    border-radius: 10px;
+    width: 70%;
+    margin: 100px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    width: 120px;
+    margin-bottom: 20px;
+    border-radius: 25px;
+}
+
+h2 {
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.conversation-container {
+    width: 80%;
+    max-width: 600px;
+    background-color: white;
+    color: black;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px auto;
+    border: 2px solid #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.conversation-box {
+    text-align: left;
+}
+
+.message {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 5px;
+}
+
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.appointments-table th, .appointments-table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+    color: #333;
+}
+
+.appointments-table th {
+    background-color: #5A78E8;
+    color: white;
+}
+
+.appointments-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.action-button {
+    background-color: #5A78E8;
+    color: white;
+    border: 2px solid white;
+    border-radius: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.action-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.toggle-button {
+    background-color: #5A78E8;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+}
+
+.toggle-button:hover {
+    background-color: #4E6DC2;
+}
+#user_message {
+    width: 80%;
+    height: 70px;
+    resize: none;
+    border: 2px solid black;
+    border-radius: 5px;
+    box-shadow: none;
+}

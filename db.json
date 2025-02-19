@@ -1,0 +1,40 @@
+{
+    "host": "db",
+    "database": "med_db",
+    "login_user": {
+        "user": "login_user",
+        "password": "login_user_password"
+    },
+    "register_user": {
+        "user": "register_user",
+        "password": "register_user_password" 
+    },
+    "appointment_user": {
+        "user": "appointment",
+        "password": "appointment_password"
+    },
+    "docagent_user":{
+        "user": "docagent_user",
+        "password": "docagent_password"
+    },
+    "appointment_history_user": {
+        "user": "appointment_history",
+        "password": "appointment_history_password"
+    },
+    "patient_history": {
+        "user": "patient_history",
+        "password": "patient_history_password"
+    },
+    "account_user": {
+        "user": "account",
+        "password": "account_password"
+    },
+    "doc_account_user": {
+        "user": "doc_account",
+        "password": "doc_account_password"
+    },
+    "doc_feedback_user": {
+        "user": "doc_feedback_user",
+        "password": "doc_feedback_user_password"
+    }
+}

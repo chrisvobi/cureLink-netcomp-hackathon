@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+    <title>Symptom Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/agent.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" class="logo" alt="CureLink Logo">
+        <h2>Symptom Analysis</h2>
+
+        <div class="conversation-box">
+            {% for message in conversation %}
+                {% if loop.index > 1 %}  {# Skip the first message #}
+                    <p class="message"><strong>{{ message.role }}:</strong> {{ message.content }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <form method="POST" class="input-form">
+            <input type="hidden" name="conversation" value="{{ conversation }}">
+            <label for="user_message">Your response:</label>
+            <input type="text" id="user_message" name="user_message" required>
+            <button type="submit" class="action-button">Submit</button>
+        </form>
+
+        {% if button %}
+            <br>
+            <p class="available-appointments">See all available appointments in your area</p>
+            <form action="{{ url_for('appointments_page') }}" method="get">
+                <button type="submit" class="action-button">Book now</button>
+            </form>
+        {% endif %}
+
+        <br>
+        <a class="action-button" href="{{ url_for('main_page') }}">Back to Main Page</a>
+    </div>
+</body>
+</html>

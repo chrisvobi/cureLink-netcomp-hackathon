@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+    <title>Main Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/Logo.png') }}" alt="CureLink Logo" class="logo">
+        <div class="success-message">
+            You have successfully logged in!
+        </div>
+        <p class="info-text">For any health problem, the agent is here for you!</p>
+        
+        <p class="option-text">To Analyze your Symptoms:</p>
+        <form action="{{ url_for('agent_page') }}" method="get">
+            <button type="submit" class="action-button">Click here!</button>
+        </form>
+
+        <p class="option-text">To see your appointments:</p>
+        <form action="{{ url_for('appointments_history_page') }}" method="get">
+            <button type="submit" class="action-button">Click here!</button>
+        </form>
+
+        <p class="option-text">To view your account details:</p>
+        <form action="{{ url_for('account_page') }}" method="get">
+            <button type="submit" class="action-button">View Account</button>
+        </form>
+
+        <p class="option-text">Logout from the system:</p>
+        <form action="{{ url_for('logout') }}" method="get">
+            <button type="submit" class="action-button logout-button" style="background-color: red; color: white;">
+                Logout
+            </button>
+        </form>
+    </div>
+</body>
+</html>
