@@ -282,7 +282,7 @@ def init_agent_route(app):
                     conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
                     session['waiting_for_pwd'] = True # Initialize flag
                     session['specialty'] = doctor_extraction.specialty
-                    return render_template('agent.html', conversation=conversation, button=True)
+                    return render_template('agent.html', conversation=conversation)
                 else:
                     conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
                     return render_template('agent.html', conversation=conversation)

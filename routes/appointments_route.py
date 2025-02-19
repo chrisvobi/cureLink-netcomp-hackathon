@@ -259,14 +259,12 @@ def find_doctors_by_criteria(specialty):
 
 checked_doctors = False
 found_doctors=[]
-chat = [system_message]
 def init_appointments_route(app):
     @app.before_request
     def before_request():
         if request.method == 'GET' and request.endpoint == 'appointments_page' and not request.args:
             global conversation, chat, semianswer
             conversation = [system_message]
-            chat = conversation
             semianswer = ""
     
     @app.route('/appointments', methods=['GET', 'POST'])
@@ -279,7 +277,6 @@ def init_appointments_route(app):
         
         specialty = session['specialty']
         global conversation # current conversation not previous
-        global chat
         doctors = find_doctors_by_criteria(specialty)
         # checks if user needs pwd accessible
         if session['need_pwd']:
@@ -319,12 +316,11 @@ def init_appointments_route(app):
             response = agent_choose_book_appointment(conversation, user_message, doctors)
             if 'booked successfully.' in response:
                 conversation = [system_message]
+                conversation.append({"role": "assistant", "content": response})
                 global semianswer
                 semianswer = ''
             else:
                 conversation.append({"role": "user", "content": user_message})            
                 conversation.append({"role": "assistant", "content": response})
-            chat.append({"role": "user", "content": user_message})
-            chat.append({"role": "assistant", "content": response})
 
-        return render_template('appointments.html', conversation=chat, doctors=doctors, found_doctors=found_doctors)  
+        return render_template('appointments.html', conversation=conversation, doctors=doctors, found_doctors=found_doctors)  
