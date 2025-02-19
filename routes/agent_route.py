@@ -3,11 +3,14 @@ from pydantic import BaseModel, Field
 import json
 from difflib import get_close_matches
 from utils.db_connection import get_db_connection
+from flask import render_template, request, session, redirect, url_for
+from utils.db_connection import get_db_connection
 
+
+# Load openai API key initialize model
 with open('config.json') as config_file:
     config = json.load(config_file)
     key = config['KEY']
-
 client = OpenAI(api_key=key)
 model = 'gpt-4o-mini'
 
@@ -24,33 +27,40 @@ system_message = {
         "If you are sure that the user isn't describing symptoms and requested for a doctor, reccomend and appointment"
     ),
 }
-added_history = False
+added_history = False # Boolean to check if the patient history has been given to the agent
 conversation = [system_message]
 
+# Use BaseModel to extract diagnosis and doctor specialty (with confidence score) from the users symptoms
 class DoctorExtraction(BaseModel):
     diagnosis: str = Field(description="Possible diagnosis based on the user's symptoms")
     specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist')")
     confidence_score: float = Field(description="Confidence score (0-1) for recommending a doctor")
 
+# Use BaseModel to check if the users symptoms require urgent care (with confidence score)
 class UrgentAttention(BaseModel):
     is_urgent: bool = Field(description="True if the symptoms require immediate emergency attention, False otherwise")
     confidence_score: float = Field(description="Confidence score (0-1) for classifying symtoms as urgent")
     reason: str = Field(description="Brief reason why emergency attention is necessary")
 
+# Use BaseModel to check if the users symptoms are not severe (with confidence score)
 class SymptomsNotSevere(BaseModel):
     at_home_treatment: str = Field(description="Recommendation for at-home treatment, based on symptoms")
     confidence_score: float = Field(description="Confidence score (0-1) for recommending at-home treatment")
 
+# Use BaseModel to get next question to ask the user
 class Questions(BaseModel):
     question: str = Field(description="The question to ask the user")
 
+# Use BaseModel to check if the user response is relevant
 class InputValidation(BaseModel):
     is_relevant: bool = Field(description="Indicates whether the user's input is medically relevant")
 
+# Use BaseModel to extract doctor specialty (with confidence score) when the user requests directly a doctor
 class RequestDoctor(BaseModel):
     specialty: str = Field(description="Relevant doctor's specialty (e.g., 'Cardiologist') that the user requested")
     confidence_score: float = Field(description="Confidence score (0-1) that the user requested a specific doctor")
 
+# Use BaseModel to extract if the user has a disability
 class DisabledAccess(BaseModel):
     is_disabled: bool = Field(description="True if the user has a disability and needs pwd (people with disabilities) access, False otherwise")
 
@@ -82,6 +92,7 @@ def validate_input(user_message,conversation) -> bool:
     
     return completion.choices[0].message.parsed.is_relevant
 
+# Function to extract doctor from user symptoms
 def extract_doctor(conversation) -> DoctorExtraction:
     completion = client.beta.chat.completions.parse(
         model=model,
@@ -90,6 +101,7 @@ def extract_doctor(conversation) -> DoctorExtraction:
     )
     return completion.choices[0].message.parsed
 
+# Function to create the next question to ask the user
 def ask_question(conversation) -> Questions:
     completion = client.beta.chat.completions.parse(
         model=model,
@@ -98,6 +110,7 @@ def ask_question(conversation) -> Questions:
     )
     return completion.choices[0].message.parsed
 
+# Function to extract if the symptoms of the user are not very severe
 def extract_symptoms_not_severe(conversation) -> SymptomsNotSevere:
     completion = client.beta.chat.completions.parse(
         model=model,
@@ -106,11 +119,8 @@ def extract_symptoms_not_severe(conversation) -> SymptomsNotSevere:
     )
     return completion.choices[0].message.parsed
 
+# Function to check if the user symptoms require urgent care
 def check_urgent_attention(conversation) -> UrgentAttention:
-    """
-    Determines whether the user's symptoms require immediate emergency attention.
-    If so, the assistant should direct the user to go to the ER immediately.
-    """
     completion = client.beta.chat.completions.parse(
         model=model,
         messages=conversation,
@@ -118,10 +128,8 @@ def check_urgent_attention(conversation) -> UrgentAttention:
     )
     return completion.choices[0].message.parsed
 
+# Function to check if the user asks directly for an appointment with a doctor
 def check_request_for_doctor(conversation) -> RequestDoctor:
-    """
-    Determines whether the user asked directly for an appointment with the doctor
-    """
     completion = client.beta.chat.completions.parse(
         model=model,
         messages=conversation,
@@ -129,11 +137,8 @@ def check_request_for_doctor(conversation) -> RequestDoctor:
     )
     return completion.choices[0].message.parsed
 
-
+# Function to check if the user needs disabled access
 def check_disabled_access(user_message) -> DisabledAccess:
-    """
-    Determines whether the user has a disability and needs pwd access
-    """
     completion = client.beta.chat.completions.parse(
         model=model,
         messages= [{"role": "system", "content": ("The user will tell if they need pwd access"
@@ -156,17 +161,14 @@ def get_closest_specialty(specialty):
     cursor.close()
     db.close()
 
-    matches = get_close_matches(specialty, specialties, n=1, cutoff=0.7)
+    matches = get_close_matches(specialty, specialties, n=1, cutoff=0.7) # Checks if the extracted specialty is close to any specialty in the database
 
     return matches[0] if matches else None
 
 
-from flask import render_template, request, session, redirect, url_for
-from utils.db_connection import get_db_connection
-
 def init_agent_route(app):
-    @app.before_request
-    def before_request():
+    @app.before_request 
+    def before_request(): # Clear conversation
         if request.method == 'GET':
             global conversation
             conversation = [system_message]
@@ -176,17 +178,17 @@ def init_agent_route(app):
     @app.route('/agent', methods=['GET', 'POST'])
     def agent_page():
         if 'user_id' not in session:
-            return redirect(url_for('login'))  # Redirect if not logged in
-        
+            return redirect(url_for('login')) # Redirect if not logged in
+
         if session.get('user_type') != "patient":  
             return redirect(url_for('login'))  # Redirect doctors away
         
         global conversation # Conversation history
 
-        # Add patient medical record and family history
+        # If patient medical record and family history haven't be loaded yet
         global added_history
-        if not added_history:
-            patient_id = session['user_id']
+        if not added_history: 
+            # Query to get relevant information for medical record and family history
             query = """
                 SELECT age, gender, medical_record, family_history
                 FROM patients
@@ -194,11 +196,12 @@ def init_agent_route(app):
             """
             conn = get_db_connection("patient_history")
             cur = conn.cursor()
-            cur.execute(query, (patient_id,))
+            cur.execute(query, (session['user_id'],))
             user_history = cur.fetchall()
             cur.close()
             conn.close()
 
+            # Create proper message that includes medical record and family history
             age, gender, medical_record, family_history = user_history[0]
             answer = f"I can see that you are a {gender}, {age} years of age."
             answer1 = ""
@@ -211,18 +214,17 @@ def init_agent_route(app):
             conversation.append({"role": "assistant", "content": history})
             added_history = True
 
-
-        # Retrieve existing conversation from the form submission
         if request.method == 'POST':
             conversation = eval(request.form['conversation'])  # Convert string back to list
-            user_message = request.form['user_message']
+            user_message = request.form['user_message'] # Get user input
 
-             # Validate user input
-            if not validate_input(user_message,conversation):
+            # Validate user input. If user input is irelevant don't add it to the conversation history
+            if not validate_input(user_message, conversation):
                 answer = "Your response does not seem to be related to medical symptoms. Please provide relevant information."
                 conversation.append({"role": "assistant", "content": answer})
                 return render_template('agent.html', conversation=conversation)
             
+            # Add users input to the conversation history
             conversation.append({"role": "user", "content": user_message})
             
             # Check if user's symptoms require urgent care
@@ -231,16 +233,15 @@ def init_agent_route(app):
                 answer = f"EMERGENCY: {urgent_check.reason}. Please go to the ER immediately!"
                 conversation.append({"role": "assistant", "content": answer})
                 return render_template('agent.html', conversation=conversation)
-                # Stop the loop as emergency action is needed
 
             # Check if user requested a specific doctor
             request_doctor = check_request_for_doctor(conversation)
             if request_doctor.confidence_score > 0.95 and request_doctor.specialty != None:
-                # check for the specialty in the database
+                # Check for the specialty in the database
                 request_doctor.specialty = get_closest_specialty(request_doctor.specialty)
                 if request_doctor.specialty is not None:
                     # Check if the user needs pwd access
-                    if 'waiting_for_pwd' in session and session['waiting_for_pwd']:
+                    if 'waiting_for_pwd' in session and session['waiting_for_pwd']: # At first pass this is false
                         need_pwd = check_disabled_access(user_message)
                         if need_pwd.is_disabled:
                             conversation.append({"role": "assistant", "content": "I have noted that you need PWD (people with disabilities) access. Let's move on with booking"})
@@ -251,10 +252,10 @@ def init_agent_route(app):
                         return render_template('agent.html', conversation=conversation, button = True)
                     conversation.append({"role": "assistant", "content": f"I see. You a want an appointment with a doctor who is a(n) {request_doctor.specialty}."})
                     conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
-                    session['waiting_for_pwd'] = True # initialize flag
+                    session['waiting_for_pwd'] = True # Initialize flag
                     session['specialty'] = request_doctor.specialty
                     return render_template('agent.html', conversation=conversation)
-                else:
+                else: 
                     conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
                     return render_template('agent.html', conversation=conversation)
 
@@ -276,15 +277,14 @@ def init_agent_route(app):
                         return render_template('agent.html', conversation=conversation, button=True)
                     conversation.append({"role": "assistant", "content": f"You might have {doctor_extraction.diagnosis}. I recommend seeing a {doctor_extraction.specialty}."})
                     conversation.append({"role": "assistant", "content": "Do you need PWD (people with disabilities) access?"})
-                    session['waiting_for_pwd'] = True # initialize flag
+                    session['waiting_for_pwd'] = True # Initialize flag
                     session['specialty'] = doctor_extraction.specialty
                     return render_template('agent.html', conversation=conversation, button=True)
-                # if specialty not in database (not correct specialty)
                 else:
                     conversation.append({"role": "assistant", "content": "I wasn't able to identify a relevant specialist. Can you describe your symptoms in more detail?"})
                     return render_template('agent.html', conversation=conversation)
             
-            # If after some questions there is no clear specialty needed, check if symptoms are not sever
+            # If after some questions there is no clear specialty needed, check if symptoms are not severe
             if len(conversation) > 8:
                 not_severe_symptoms = extract_symptoms_not_severe(conversation)
                 if not_severe_symptoms.confidence_score > 0.9:

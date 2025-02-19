@@ -6,6 +6,8 @@ from utils.db_connection import get_db_connection
 from datetime import datetime 
 from openai import OpenAI
 
+
+# Check if appointment is available and return doctrs id
 def choose_appointment (name, date_time, doctors):
     if name is None: return "Please provide a doctor's name."
     if date_time is None: return "Please provide a date and time for the appointment."
@@ -14,31 +16,32 @@ def choose_appointment (name, date_time, doctors):
             if date_time in doctor['available_slots']: return {"doctor_id": doctor['doctor_id'], "date_time": date_time}
     return f"Sorry, {name} is not available at {date_time}. Please choose another date and time."
         
-
+# Insert appointment in the database
 def book_appointment(patient_id, appointment):
     db = get_db_connection("appointment_user")
-    if db is None:
-        return
     cursor = db.cursor(dictionary=True)
 
+    # Get the slot id of the appointment
     query = """
-    SELECT slot_id from available_slots
-    where doctor_id = %s and date_time = %s
-"""
+        SELECT slot_id from available_slots
+        where doctor_id = %s and date_time = %s
+    """
     cursor.execute(query, (appointment['doctor_id'], appointment['date_time']))
     slot_id = cursor.fetchone()
 
+    # Insert appointment in appointments table
     query = """
-    INSERT INTO appointments (patient_id, doctor_id, slot_id, status)
-    VALUES (%s, %s, %s, %s)
-"""
+        INSERT INTO appointments (patient_id, doctor_id, slot_id, status)
+        VALUES (%s, %s, %s, %s)
+    """
     cursor.execute(query, (patient_id, appointment['doctor_id'], slot_id['slot_id'], "scheduled"))
 
+    # Update the booked bool in the available slots table
     query = """
-    UPDATE available_slots
-    SET booked = 1
-    WHERE slot_id = %s
-"""
+        UPDATE available_slots
+        SET booked = 1
+        WHERE slot_id = %s
+    """
     cursor.execute(query, (slot_id['slot_id'],))
     db.commit()
     cursor.close()
@@ -46,8 +49,7 @@ def book_appointment(patient_id, appointment):
 
     return f"Appointment at {appointment['date_time']} has been booked successfully."
 
-
-semianswer = ""
+semianswer = "" # Save answer of user if not all info is given
 def agent_choose_book_appointment(conversation, user_message, doctors):
     """openai model to choose appointments"""
     global semianswer
@@ -57,20 +59,22 @@ def agent_choose_book_appointment(conversation, user_message, doctors):
         functions = functions_description,
         function_call = "auto",)
     output = completion.choices[0].message
-    if output.function_call is None:
+    if output.function_call is None: # no function called
         return output.content
     params = json.loads(output.function_call.arguments)
 
+    # If some info are missing from the user input save and proceed to request the rest
     if output.function_call.name == "missing_name":
         semianswer = params["date_time"]
     elif output.function_call.name == "missing_date":
         semianswer = params["name"]
     
+    # Save to params
     name = params["name"] if "name" in params else None
     date_time = params["date_time"] if "date_time" in params else None
-
     params = {"name": name, "date_time": date_time}
     
+    # Create appointment for function calls
     appointment = choose_appointment (params["name"], params["date_time"], doctors)
     if type(appointment) == str:
         book = appointment
@@ -80,16 +84,14 @@ def agent_choose_book_appointment(conversation, user_message, doctors):
 
     return book
 
-
-# Load API key
+# Load openai API key initialize model
 with open('config.json') as config_file:
     config = json.load(config_file)
     key = config['KEY']
-
 client = OpenAI(api_key=key)
 model = "gpt-4o-mini"
-# Define the Pydantic model for structured output
 
+# System message
 system_message = {
     "role": "system",
     "content": ( "You are an appointmentbooking assistant designed to help the user book an appointment."
@@ -111,11 +113,11 @@ system_message = {
         "ignore pronoun dr. mr. mrs. ms. and so on"
     ),
 }
-
 conversation = [system_message]
 
+# The openai model tries to extract the parameters from the user input based on these functions 
 functions_description = [{
-    "name":"extract_data",
+    "name":"extract_data", # All data given
     "description":"Extract parameters from user input",
     "parameters":{
         "type":"object",
@@ -133,7 +135,7 @@ functions_description = [{
     }
 },
 {
-    "name":"missing_date",
+    "name":"missing_date", # missing date
     "description":"Extract parameters from user input, just the name",
     "parameters":{
         "type":"object",
@@ -151,7 +153,7 @@ functions_description = [{
     }
 },
 {
-    "name":"missing_name",
+    "name":"missing_name", # missing doctor name
     "description":"Extract parameters from user input just the date",
     "parameters":{
         "type":"object",
@@ -169,13 +171,13 @@ functions_description = [{
     }
 }]
 
-
+# Load google API key
 with open('config.json') as config_file:
     config = json.load(config_file)
     GOOGLE_API_KEY = config['GOOGLE_API_KEY']
 
 def get_coordinates(address):
-    """Χρησιμοποιεί το Google Geocoding API για να μετατρέψει μια διεύθυνση σε γεωγραφικές συντεταγμένες."""
+    # Use google API to get coordinates from address
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={GOOGLE_API_KEY}"
     response = requests.get(url)
     data = response.json()
@@ -187,28 +189,23 @@ def get_coordinates(address):
         print(f"Coordinates not found for: {address}")
         return None, None
 
+# Use Haversine form to calculate distance
 def haversine(lat1, lon1, lat2, lon2):
-    """Υπολογίζει τη γεωδαιτική απόσταση μεταξύ δύο σημείων με τον τύπο Haversine."""
-    R = 6371  # Ακτίνα της Γης σε χιλιόμετρα
+    R = 6371  # radius of the earth
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
 
     a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-    return R * c  # Απόσταση σε χιλιόμετρα
+    return R * c  # in km
 
+# Find doctors based on city, specialty and distance
 def find_doctors_by_criteria(specialty):
-    # Get patient data from session and calculate coordinates
-    
-    """Ανακτά και εμφανίζει γιατρούς με βάση την πόλη και την ειδικότητα, ταξινομημένους κατά απόσταση από τον ασθενή."""
     db = get_db_connection("appointment_user")
-    if db is None:
-        return
-
     cursor = db.cursor(dictionary=True)
-
-
+    
+    # Get city of patient based on his zip_code
     cursor.execute("""
         SELECT city 
         FROM address 
@@ -229,7 +226,6 @@ def find_doctors_by_criteria(specialty):
     GROUP BY d.doctor_id, d.name, d.specialty, d.zip_code, d.street, addr.city
     """
     cursor.execute(query, (specialty, patient_city))
-    
     doctors = cursor.fetchall()
     doctor_distances = []
 
